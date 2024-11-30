@@ -15,24 +15,46 @@
 /* Includes ------------------------------------------------------------------*/
 
 /* Exported macros -----------------------------------------------------------*/
-
-
-
-
-
-#define ARM_MATH_CM3
-#define STEERING_WHEEL
-
 // 舵小板选择
 // #define AGV_BOARD_A //不同舵轮对应宏定义
 // #define AGV_BOARD_B
 // #define AGV_BOARD_C
 #define AGV_BOARD_D
 
+#define A_ENCODER_ID 0x0AU
+#define B_ENCODER_ID 0x0BU
+#define C_ENCODER_ID 0x0CU
+#define D_ENCODER_ID 0x0DU
+
+#define A_STEERING_CAN_ID 0x1AU
+#define B_STEERING_CAN_ID 0x1BU
+#define C_STEERING_CAN_ID 0x1CU
+#define D_STEERING_CAN_ID 0x1DU
+
+
+// 根据板子类型定义对应的ENCODER_ID
+#ifdef AGV_BOARD_A
+#define ENCODER_ID A_ENCODER_ID
+#define AGV_BOARD_ID A_STEERING_CAN_ID
+#elif defined(AGV_BOARD_B)
+#define ENCODER_ID B_ENCODER_ID
+#define AGV_BOARD_ID B_STEERING_CAN_ID
+#elif defined(AGV_BOARD_C)
+#define ENCODER_ID C_ENCODER_ID
+#define AGV_BOARD_ID C_STEERING_CAN_ID
+#elif defined(AGV_BOARD_D)
+#define ENCODER_ID D_ENCODER_ID
+#define AGV_BOARD_ID D_STEERING_CAN_ID
+#else
+#error "请定义舵轮板类型 (AGV_BOARD_A/B/C/D)"
+#endif
+
+#define ARM_MATH_CM3
+#define STEERING_WHEEL
+
 
 
 /* Exported types ------------------------------------------------------------*/
-
 
 /* Exported variables --------------------------------------------------------*/
 

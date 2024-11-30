@@ -55,9 +55,12 @@ void Agv_Board_CAN1_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
         Steering_Wheel.Motion_Motor.CAN_RxCpltCallback(CAN_RxMessage->Data);
     }
     break;
-
-    default:
-        break;
+    case ENCODER_ID:
+    {
+        Steering_Wheel.Encoder.CAN_RxCpltCallback(CAN_RxMessage->Data);
+    }
+    break;
+   
     }
 }
 
@@ -69,10 +72,19 @@ void Agv_Board_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->Header.StdId)
     {
-    case Steering_Wheel.CAN_ID:
-        /* code */
+        case (AGV_BOARD_ID):
+        {
+            Steering_Wheel.CAN_RxChassisCallback(CAN_RxMessage);
+        }
         break;
-
+        case (0x20A):
+        case (0x20B):
+        case (0x20C):
+        case (0x20D):
+        {
+            Steering_Wheel.CAN_RxAgvBoardCallback(CAN_RxMessage);
+        }
+        break;
     default:
         break;
     }
@@ -87,7 +99,7 @@ void Agv_Board_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 extern "C" void Task_Init()
 {
 
-    DWT_Init(168);
+    DWT_Init(72);
 
     /********************************** 驱动层初始化 **********************************/
 #ifdef STEERING_WHEEL
