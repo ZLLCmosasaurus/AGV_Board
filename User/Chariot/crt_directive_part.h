@@ -75,24 +75,20 @@ public:
     uint8_t *CAN_Tx_Data;
 
 
-    //PID运算需要用以下标准化处理的变量
-    float Target_Angle;      //轮组期望转向角,deg,0-360
-    float Target_Omega;      //轮组期望转向转速,deg/s
-    float Target_Velocity;      //轮组期望速度,m/s
+
+    float Target_Position;      //期望位置,deg,0-360
+    float Target_Velocity;      //期望速度,rpm
 
 
-    float Now_Angle;         // 轮组当前转向角,deg,0-360
-    float Now_Omega;         // 轮组当前转速,deg/s
-    float Now_Velocity;      // 轮组当前速度,m/s
+    float Now_Position;         // 当前位置,deg,0-360
+    float Now_Velocity;         // 当前速度,rpm
 
-
-    int8_t invert_flag;      // 电机方向标志: 0=不反转, 1=反转
-
+    int8_t invert_flag;
     STEERING_WHEEL_ENABLE_T enable;
-    STEERING_WHEEL_ARC_OPTIMIZATION_T arc_optimization;//优劣弧优化
-    STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization;//角度优化
+    STEERING_WHEEL_ARC_OPTIMIZATION_T arc_optimization;
+    STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization;
 
-
+    const 
 };
 
 
