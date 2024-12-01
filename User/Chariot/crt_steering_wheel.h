@@ -69,11 +69,7 @@ public:
     Class_Power_Limit Power_Limit;
     Struct_Power_Management Power_Management;
 
-    // 绑定的CAN
-    Struct_CAN_Manage_Object *CAN_Manage_Object;
-    Enum_Steering_Wheel_ID CAN_ID;
-    // 发送缓存区
-    uint8_t *CAN_Tx_Data;
+
 
     // PID运算需要用以下标准化处理的变量
     float Target_Angle;    // 轮组期望转向角,deg,0-360
@@ -84,11 +80,11 @@ public:
     float Now_Omega;    // 轮组当前转速,deg/s
     float Now_Velocity; // 轮组当前速度,m/s
 
-    int8_t invert_flag; // 电机方向标志: 0=不反转, 1=反转
 
-    STEERING_WHEEL_ENABLE_T enable;
-    STEERING_WHEEL_ARC_OPTIMIZATION_T arc_optimization; // 优劣弧优化
-    STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization; // 角度优化
+    int8_t invert_flag; // 电机方向标志: 0=不反转, 1=反转
+    STEERING_WHEEL_ENABLE_T enable_flag=STEERING_WHEEL_SLEEP; // 轮组使能标志
+    STEERING_WHEEL_ARC_OPTIMIZATION_T arc_optimization=ENABLE_MINOR_ARC_OPTIMIZEATION; // 优劣弧优化
+    STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization= ENABLE_MINOR_DEG_OPTIMIZEATION; // 角度优化
 };
 
 #endif //

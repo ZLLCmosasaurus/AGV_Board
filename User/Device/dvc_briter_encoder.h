@@ -85,7 +85,7 @@ struct Struct_Briter_Encoder_Can_Data
 
 typedef struct
 {
-    uint32_t Lsbs_Per_Encoder_Round;                          // 每圈编码器分辨率
+    uint16_t Lsbs_Per_Encoder_Round;                          // 每圈编码器分辨率
     BRITER_ENCODER_CAN_BAUD_RATE_t Baud_Rate;                 // 编码器波特率
     BRITER_ENCODER_INCREMENT_DIRECTION_t Increment_Direction; // 增量方向
 
@@ -94,7 +94,7 @@ typedef struct
 class Class_Briter_Encoder
 {
 public:
-    void Init();
+    void Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate=BRITER_ENCODER_SET_CAN_BAUD_RATE_1M, uint16_t __Lsbs_Per_Encoder_Round=1024, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction=BRITER_ENCODER_INCREMENT_DIRECTION_CW);
 
     void CAN_RxCpltCallback(uint8_t *Rx_Data);
     void TIM_PeriodElapsedCallback();

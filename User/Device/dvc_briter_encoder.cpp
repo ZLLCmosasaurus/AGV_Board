@@ -1,15 +1,23 @@
 #include "dvc_briter_encoder.h"
 
-void Class_Briter_Encoder::Init()
+void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate,uint16_t __Lsbs_Per_Encoder_Round, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction)
 {
-    // 初始化编码器
-    // 设置波特率
-    // 设置分辨率
-    // 设置增量方向
-    // 设置CAN ID
-    // 设置CAN接收回调函数
-    // 设置CAN发送缓冲区
+    if (hcan->Instance == CAN1)
+    {
+        CAN_Manage_Object = &CAN1_Manage_Object;
+    }
+    else if (hcan->Instance == CAN2)
+    {
+        CAN_Manage_Object = &CAN2_Manage_Object;
+    }
+    CAN_ID = __CAN_ID;
+    this->CAN_Tx_Data = allocate_tx_data(hcan, __CAN_ID);
+
+    Parameter.Baud_Rate = __Briter_Encoder_Baud_Rate;
+    Parameter.Lsbs_Per_Encoder_Round = __Lsbs_Per_Encoder_Round;
+    Parameter.Increment_Direction = __Increment_Direction;
 }
+
 
 void Class_Briter_Encoder::Data_Process()
 {

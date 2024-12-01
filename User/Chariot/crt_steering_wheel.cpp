@@ -64,5 +64,17 @@ void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMes
 
 void Class_Steering_Wheel::Init()
 {
-    
+
+    //todo:待调参
+    Motion_Motor.PID_Omega.Init();
+    Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA,14);
+
+    Directive_Motor.PID_Angle.Init();
+    Directive_Motor.PID_Omega.Init();
+    Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_ANGLE_OMEGA,8);
+
+    Encoder.Init(&hcan1, ENCODER_ID);
+
+
+
 }
