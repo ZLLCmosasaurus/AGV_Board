@@ -209,7 +209,7 @@ float Square(float Input) // 平方函数
 	return Ans;
 }
 
-double My_atan(double y, double x)//自定义atan函数
+double My_atan(double y, double x)//自定义atan函数,返回值范围[-PI,PI]
 {
 	double atan;
 	atan = atan2(y, x);

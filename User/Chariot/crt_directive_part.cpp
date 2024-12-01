@@ -11,26 +11,26 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
     {
     case 0x02A:
         {
-            this->Power_Limit.Steering_Weel_Power[0].motion.theoretical = motion_power;
-            this->Power_Limit.Steering_Weel_Power[0].directive.theoretical = directive_power;
+            this->Power_Management.Steering_Weel_Power[0].motion.theoretical = motion_power;
+            this->Power_Management.Steering_Weel_Power[0].directive.theoretical = directive_power;
         }
         break;
     case 0x02B:
         {
-            this->Power_Limit.Steering_Weel_Power[1].motion.theoretical = motion_power;
-            this->Power_Limit.Steering_Weel_Power[1].directive.theoretical = directive_power;
+            this->Power_Management.Steering_Weel_Power[1].motion.theoretical = motion_power;
+            this->Power_Management.Steering_Weel_Power[1].directive.theoretical = directive_power;
         }
         break;
     case 0x02C:
         {
-            this->Power_Limit.Steering_Weel_Power[2].motion.theoretical = motion_power;
-            this->Power_Limit.Steering_Weel_Power[2].directive.theoretical = directive_power;
+            this->Power_Management.Steering_Weel_Power[2].motion.theoretical = motion_power;
+            this->Power_Management.Steering_Weel_Power[2].directive.theoretical = directive_power;
         }
         break;
     case 0x02D:
         {
-            this->Power_Limit.Steering_Weel_Power[3].motion.theoretical = motion_power;
-            this->Power_Limit.Steering_Weel_Power[3].directive.theoretical = directive_power;
+            this->Power_Management.Steering_Weel_Power[3].motion.theoretical = motion_power;
+            this->Power_Management.Steering_Weel_Power[3].directive.theoretical = directive_power;
         }
         break;
 

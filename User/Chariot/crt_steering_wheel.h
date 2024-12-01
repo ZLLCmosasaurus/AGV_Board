@@ -43,16 +43,16 @@ typedef enum
 
 typedef enum
 {
-    A_STEERING_CAN_ID_e=0x1Au,
-    B_STEERING_CAN_ID_e=0x1Bu,
-    C_STEERING_CAN_ID_e=0x1Cu,
-    D_STEERING_CAN_ID_e=0x1Du
+    A_STEERING_CAN_ID_e = 0x1Au,
+    B_STEERING_CAN_ID_e = 0x1Bu,
+    C_STEERING_CAN_ID_e = 0x1Cu,
+    D_STEERING_CAN_ID_e = 0x1Du
 
 } Enum_Steering_Wheel_ID;
 
 /**
  * @brief 舵轮轮组类
- * 
+ *
  */
 class Class_Steering_Wheel
 {
@@ -67,6 +67,7 @@ public:
     Class_Briter_Encoder Encoder;
 
     Class_Power_Limit Power_Limit;
+    Struct_Power_Management Power_Management;
 
     // 绑定的CAN
     Struct_CAN_Manage_Object *CAN_Manage_Object;
@@ -74,27 +75,20 @@ public:
     // 发送缓存区
     uint8_t *CAN_Tx_Data;
 
+    // PID运算需要用以下标准化处理的变量
+    float Target_Angle;    // 轮组期望转向角,deg,0-360
+    float Target_Omega;    // 轮组期望转向转速,deg/s
+    float Target_Velocity; // 轮组期望速度,m/s
 
-    //PID运算需要用以下标准化处理的变量
-    float Target_Angle;      //轮组期望转向角,deg,0-360
-    float Target_Omega;      //轮组期望转向转速,deg/s
-    float Target_Velocity;      //轮组期望速度,m/s
+    float Now_Angle;    // 轮组当前转向角,deg,0-360
+    float Now_Omega;    // 轮组当前转速,deg/s
+    float Now_Velocity; // 轮组当前速度,m/s
 
-
-    float Now_Angle;         // 轮组当前转向角,deg,0-360
-    float Now_Omega;         // 轮组当前转速,deg/s
-    float Now_Velocity;      // 轮组当前速度,m/s
-
-
-    int8_t invert_flag;      // 电机方向标志: 0=不反转, 1=反转
+    int8_t invert_flag; // 电机方向标志: 0=不反转, 1=反转
 
     STEERING_WHEEL_ENABLE_T enable;
-    STEERING_WHEEL_ARC_OPTIMIZATION_T arc_optimization;//优劣弧优化
-    STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization;//角度优化
-
-
+    STEERING_WHEEL_ARC_OPTIMIZATION_T arc_optimization; // 优劣弧优化
+    STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization; // 角度优化
 };
 
-
-
-#endif // 
+#endif //

@@ -37,9 +37,28 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
     }
 }
 
+
+//这里要根据帧ID判断是功率数据还是速度数据
 void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
-   //todo
+    float velocity_x, velocity_y, velocity,theta;
+
+    if(CAN_RxMessage->Header.StdId==AGV_BOARD_ID)
+    {
+        memcpy(&velocity_x, CAN_RxMessage->Data, 4);
+        memcpy(&velocity_y, CAN_RxMessage->Data + 4, 4);
+
+        velocity = sqrt(velocity_x * velocity_x + velocity_y * velocity_y);
+        theta = My_atan(velocity_y, velocity_x) + PI;//映射到[0,2PI]
+
+        this->Target_Velocity=velocity;
+        this->Target_Angle = theta * RAD_TO_DEG;
+    }
+
+    if (CAN_RxMessage->Header.StdId == 0x01E)
+    {
+        memcpy(&Power_Management.Max_Power, CAN_RxMessage->Data, 2);
+    }
 }
 
 

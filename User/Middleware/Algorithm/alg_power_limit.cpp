@@ -12,7 +12,7 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "alg_power_limit.h"
-#include "dvc_djimotor.h"
+
 
 /* Private macros ------------------------------------------------------------*/
 
@@ -22,9 +22,28 @@
 
 /* Private function declarations ---------------------------------------------*/
 
-
-
 /* Function prototypes -------------------------------------------------------*/
+/**
+ * @brief 返回功率，单位为w
+ * 
+ * @param motor 
+ * @return float 
+ */
+float Calculate_Theoretical_Power(Class_DJI_Motor_C620 &motor)
+{
+    //todo
+}
 
 
-/************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/
+/**
+ * @brief 返回扭矩，单位为Nm，用返回值的时候要转化到控制量
+ * 
+ * @param motor 
+ * @return float 
+ */
+float Calculate_Toque(Class_DJI_Motor_C620 &motor)
+{
+    //todo
+}
+
+    /************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/
