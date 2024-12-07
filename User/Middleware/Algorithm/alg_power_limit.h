@@ -56,9 +56,9 @@ class Class_Power_Limit
 public:
     //理论上讲这个函数不应该是直接传入某个电机类的实例，应该是传入功率，速度，转矩的变量，但是如果这样就需要在使用这个函数前再转化一系列单位，比较麻烦，后续有时间再改吧
     //todo
-    float Calculate_Theoretical_Power(Class_DJI_Motor_C620 &motor); // 计算单个电机的理论功率
+    float Calculate_Theoretical_Power(Class_DJI_Motor_C620 (&motor)[4]); // 计算单个电机的理论功率
     float Calculate_Toque(Class_DJI_Motor_C620 &motor);             // 根据功率计算转矩
-
+Motor_Power_t Motor_Power;
 protected:
  
 
@@ -68,6 +68,7 @@ protected:
     // 电机模型参数
     float k1 = 1.3;   // k1
     float k2 = 0.015; // k2
+    float k3=8.4/8.0;// k3 静态损耗/n
     float Alpha = 0.0f;
     float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient
 };
