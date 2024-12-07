@@ -68,7 +68,7 @@ public:
 
     Class_Power_Limit Power_Limit;
     Struct_Power_Management Power_Management;
-
+    
 
 
     // PID运算需要用以下标准化处理的变量
