@@ -27,7 +27,7 @@
 
 #define CMD_CURRENT_TO_TORQUE (CMD_CURRENT_TO_TORQUE_CURRENT * Kt)
 #define TORQUE_TO_CMD_CURRENT 1 / (CMD_CURRENT_TO_TORQUE_CURRENT * Kt)
-
+#define PI 3.14159265354f
 typedef struct
 {
     float theoretical; // 理论功率
@@ -59,7 +59,7 @@ typedef struct
     float Scale_Conffient;         // 功率缩放系数
     float Theoretical_Total_Power; // 理论总功率
     float Scaled_Total_Power;      // 缩放后总功率
-
+    float Actual_Power;          // 实际功率
     Steering_Wheel_Power_t Steering_Wheel_Power[4];
     Steering_Wheel_Motor_Data_t Steering_Wheel_Motor_Data[4];
 
@@ -69,8 +69,15 @@ class Class_Power_Limit
 {
 public:
     float Calculate_Theoretical_Power(float omega, float torque); // 计算单个电机的理论功率
-    float Calculate_Toque(float omega, float power);              // 根据功率计算转矩
+    float Calculate_Toque(float omega, float power,Struct_Power_Management &power_management,float torque);              // 根据功率计算转矩
+    float Calculate_Power_Coefficient(Struct_Power_Management &power_management);//计算k1,k2
+    float Calculate_Sum_Power(Struct_Power_Management &power_management);// 计算总的理论功率
+    float Calculate_Scaled_Coefficient(float actual_sum_power, float theoretical_sum_power,Struct_Power_Management &power_management); // 计算缩放系数
+    float Get_K1();
+    float Get_K2();
 
+    void Set_K1(float _k1);
+    void Set_K2(float _k2);
 protected:
     // 转矩系数 rad转rpm系数
     float Toque_Coefficient = 1.99688994e-6f * (3591 / 187) / 13.93f; // (20/16384)*(0.3)*(187/3591)/9.55
@@ -82,6 +89,25 @@ protected:
     float Alpha = 0.0f;
     float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient
 };
+float Class_Power_Limit::Get_K1()
+{
+    return k1;
+}
+
+float Class_Power_Limit::Get_K2()
+{
+    return k2;
+}
+
+void Class_Power_Limit::Set_K1(float _k1)
+{
+    k1 = _k1;
+}
+
+void Class_Power_Limit::Set_K2(float _k2)
+{
+    k2 = _k2;
+}
 
 /* Exported types ------------------------------------------------------------*/
 

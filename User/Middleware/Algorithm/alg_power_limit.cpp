@@ -20,37 +20,89 @@
 
 /* Private variables ---------------------------------------------------------*/
 Class_Power_Limit Power_Limit;
+RLS rls;
 /* Private function declarations ---------------------------------------------*/
+static inline bool floatEqual(float a, float b) { return fabs(a - b) < 1e-5f; }
 
+static inline float rpm2av(float rpm) { return rpm * (float)PI / 30.0f; }
+
+static inline float av2rpm(float av) { return av * 30.0f / (float)PI; }
+static inline float fmax(float a, float b) {   return (a > b) ? a : b;}
 /* Function prototypes -------------------------------------------------------*/
 /**
  * @brief 返回单个电机的计算功率
- * 
+ *
  * @param omega 转子转速，单位为rpm
  * @param torque 转子扭矩大小，单位为nm
- * @return float 
+ * @return float
  */
-float Calculate_Theoretical_Power(Class_DJI_Motor_C620 (&motor)[4],Class_Power_Limit power_limit)
+float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque)
 {
+    float cmdPower;
+
+    float sumError = 0.0f;
+    float error;
+
+    float k1 = Get_K1();
+    float k2 = Get_K2();
+
+    cmdPower = omega * torque + fabs(omega) * k1 + torque * torque * k2 +
+               k3 ;
+    return cmdPower;
+}
+
+float Class_Power_Limit::Calculate_Sum_Power(Struct_Power_Management &power_management)
+{
+    float sumPower = 0;
+
+    for (int i = 0; i < 4; i++)
+    {
+        power_management.Theoretical_Total_Power += Calculate_Theoretical_Power(power_management.Steering_Wheel_Motor_Data[i].directive.omega,
+                                                                                power_management.Steering_Wheel_Motor_Data[i].directive.torque) +
+                                                    Calculate_Theoretical_Power(power_management.Steering_Wheel_Motor_Data[i].motion.omega,
+                                                                                power_management.Steering_Wheel_Motor_Data[i].motion.torque);
+    }
+    sumPower = power_management.Theoretical_Total_Power;
+    return sumPower;
+}
+
+float Class_Power_Limit::Calculate_Scaled_Coefficient(float max_power, float theoretical_sum_power, Struct_Power_Management &power_management)
+{
+    float scaled_coefficient = 0;
+    theoretical_sum_power = Calculate_Sum_Power(power_management);
+    scaled_coefficient = max_power / theoretical_sum_power;
+    power_management.Scale_Conffient = scaled_coefficient;
+    return scaled_coefficient;
+}
+
+float Class_Power_Limit::Calculate_Power_Coefficient(Struct_Power_Management &power_management)
+{
+
+    // todo
     static Matrixf<2, 1> samples;
     static Matrixf<2, 1> params;
     static float effectivePower = 0;
     // We consider motor that is just disconnected as still using power, by assuming the motor keep
     // latest output and rpm by 1 second, otherwise it is not safe if we only use energy loop
-          for(int i=0;i<4;i++){
-            if(measuredPower>5){
-                effectivePower += motor[i].getTorqueFeedback() * rpm2av(manager.motors[i]->getRPMFeedback());
-                samples[0][0] += fabsf(rpm2av(manager.motors[i]->getRPMFeedback()));
-                samples[1][0] += manager.motors[i]->getTorqueFeedback() * manager.motors[i]->getTorqueFeedback();
-            }
-} 
-        power_limit.Motor_Power.theoretical = power_limit.k1 * samples[0][0] + power_limit.k2 * samples[1][0] + effectivePower + power_limit.k3;
-        params = manager.rls.update(samples, manager.measuredPower - effectivePower - manager.k3);
-        manager.k1 = fmax(params[0][0], 1e-5f);  // In case the k1 diverge to negative number
-        manager.k2 = fmax(params[1][0], 1e-5f);  // In case the k2 diverge to negative number
-}
-    
+    for (int i = 0; i < 4; i++)
+    {
+        if (power_management.Actual_Power > 5)
+        {
+            effectivePower += power_management.Steering_Wheel_Motor_Data[i].directive.torque *
+                                  rpm2av(power_management.Steering_Wheel_Motor_Data[i].directive.omega) +
+                              power_management.Steering_Wheel_Motor_Data[i].motion.torque * rpm2av(power_management.Steering_Wheel_Motor_Data[i].motion.omega);
 
+            samples[0][0] += fabsf(rpm2av(power_management.Steering_Wheel_Motor_Data[i].motion.omega)) +
+                             fabsf(rpm2av(power_management.Steering_Wheel_Motor_Data[i].directive.omega));
+
+            samples[1][0] += power_management.Steering_Wheel_Motor_Data[i].motion.torque * power_management.Steering_Wheel_Motor_Data[i].motion.torque + power_management.Steering_Wheel_Motor_Data[i].directive.torque * power_management.Steering_Wheel_Motor_Data[i].directive.torque;
+        }
+    }
+    // power_limit.Motor_Power.theoretical = power_limit.k1 * samples[0][0] + power_limit.k2 * samples[1][0] + effectivePower + power_limit.k3;
+    params = rls.update(samples, power_management.Actual_Power - effectivePower -8*k3);
+    k1 = fmax(params[0][0], 1e-5f); // In case the k1 diverge to negative number
+    k2 = fmax(params[1][0], 1e-5f); // In case the k2 diverge to negative number
+}
 /**
  * @brief 返回扭矩，单位为Nm，用返回值的时候要转化到控制量
  *
@@ -58,144 +110,28 @@ float Calculate_Theoretical_Power(Class_DJI_Motor_C620 (&motor)[4],Class_Power_L
  * @param power 电机功率，单位为w
  * @return float
  */
-float Calculate_Toque(float omega, float power)
+float Class_Power_Limit::Calculate_Toque(float omega, float power, Struct_Power_Management &power_management, float torque)
 {
-    //todo
-    const float k0 = manager.torqueConst * manager.motors[0]->getCurrentLimit() /
-                     manager.motors[0]->getOutputLimit();  // torque current rate of the motor, defined as Nm/Output
-
-    static float newTorqueCurrent[4];
-
-    float sumCmdPower = 0.0f;
-    float cmdPower[4];
-
-    float sumError = 0.0f;
-    float error[4];
-
-    float maxPower = Utils::Math::clamp(manager.userConfiguredMaxPower, manager.fullMaxPower, manager.baseMaxPower);
-
-    float allocatablePower = maxPower;
-    float sumPowerRequired = 0.0f;
-#if USE_DEBUG
-    static float newCmdPower;
-#endif
-
-    for (int i = 0; i < 4; i++)
+    float newTorqueCurrent = 0.0f;
+    float powerWeight = power_management.Scale_Conffient;
+    float delta = omega*omega-4*(k1*fabs(omega)+k3-powerWeight*power)*k2;
+    if (floatEqual(delta, 0.0f)) // repeat roots
     {
-        if (isMotorConnected(manager.motors[i]))
-        {
-            PowerObj *p = objs[i];
-            cmdPower[i] = p->pidOutput * k0 * p->curAv + fabs(p->curAv) * manager.k1 + p->pidOutput * k0 * p->pidOutput * k0 * manager.k2 +
-                          manager.k3 / static_cast<float>(4);
-            sumCmdPower += cmdPower[i];
-            error[i] = fabs(p->setAv - p->curAv);
-            if (floatEqual(cmdPower[i], 0.0f) || cmdPower[i] < 0.0f)
-            {
-                allocatablePower += -cmdPower[i];
-            }
-            else
-            {
-                sumError += error[i];
-                sumPowerRequired += cmdPower[i];
-            }
-        }
-        else if (motorDisconnectCounter[i] < 1000U)
-        {
-            cmdPower[i] = manager.motors[i]->getTorqueFeedback() * rpm2av(manager.motors[i]->getRPMFeedback()) +
-                          fabs(rpm2av(manager.motors[i]->getRPMFeedback())) * manager.k1 +
-                          manager.motors[i]->getTorqueFeedback() * manager.motors[i]->getTorqueFeedback() * manager.k2 + manager.k3 / 4.0f;
-            error[i] = 0.0f;
-        }
-        else
-        {
-            cmdPower[i] = 0.0f;
-            error[i]    = 0.0f;
-        }
+        newTorqueCurrent = omega / (2.0f * k2);
     }
-
-    // update power status
-    powerStatus.maxPowerLimited          = maxPower;
-    powerStatus.sumPowerCmd_before_clamp = sumCmdPower;
-
-    if (sumCmdPower > maxPower)
+    else if (delta > 0.0f) // distinct roots
     {
-        float errorConfidence;
-        if (sumError > error_powerDistribution_set)
-        {
-            errorConfidence = 1.0f;
-        }
-        else if (sumError > prop_powerDistribution_set)
-        {
-            errorConfidence =
-                Utils::Math::clamp((sumError - prop_powerDistribution_set) / (error_powerDistribution_set - prop_powerDistribution_set), 0.0f, 1.0f);
-        }
-        else
-        {
-            errorConfidence = 0.0f;
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            PowerObj *p = objs[i];//功率计算反解电流值
-            if (isMotorConnected(manager.motors[i]))
-            {
-                if (floatEqual(cmdPower[i], 0.0f) || cmdPower[i] < 0.0f)
-                {
-                    newTorqueCurrent[i] = p->pidOutput;
-                    continue;
-                }
-                float powerWeight_Error = fabs(p->setAv - p->curAv) / sumError;
-                float powerWeight_Prop  = cmdPower[i] / sumPowerRequired;
-                float powerWeight       = errorConfidence * powerWeight_Error + (1.0f - errorConfidence) * powerWeight_Prop;
-                float delta             = p->curAv * p->curAv -
-                              4.0f * manager.k2 * (manager.k1 * fabs(p->curAv) + manager.k3 / static_cast<float>(4) - powerWeight * allocatablePower);
-                if (floatEqual(delta, 0.0f))  // repeat roots
-                {
-                    newTorqueCurrent[i] = -p->curAv / (2.0f * manager.k2) / k0;
-                }
-                else if (delta > 0.0f)  // distinct roots
-                {
-                    newTorqueCurrent[i] = p->pidOutput > 0.0f ? (-p->curAv + sqrtf(delta)) / (2.0f * manager.k2) / k0
-                                                              : (-p->curAv - sqrtf(delta)) / (2.0f * manager.k2) / k0;
-                }
-                else  // imaginary roots
-                {
-                    newTorqueCurrent[i] = -p->curAv / (2.0f * manager.k2) / k0;
-                }
-                newTorqueCurrent[i] = Utils::Math::clamp(newTorqueCurrent[i], p->pidMaxOutput);
-            }
-            else
-            {
-                newTorqueCurrent[i] = 0.0f;
-            }
-        }
+        newTorqueCurrent = torque > 0.0f ? (omega + sqrtf(delta)) / (2.0f * k2)
+                                         : (omega - sqrtf(delta)) / (2.0f * k2);
     }
-    else
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            if (isMotorConnected(manager.motors[i]))
-            {
-                newTorqueCurrent[i] = objs[i]->pidOutput;
-            }
-            else
-            {
-                newTorqueCurrent[i] = 0.0f;
-            }
-        }
+    else // imaginary roots
+    { 
+        newTorqueCurrent = omega / (2.0f * k2);
     }
+   // newTorqueCurrent = Utils::Math::clamp(newTorqueCurrent, p->pidMaxOutput);
 
-#if USE_DEBUG
-    newCmdPower = 0.0f;
-    for (int i = 0; i < 4; i++)
-    {
-        PowerObj *p = objs[i];
-        newCmdPower += newTorqueCurrent[i] * k0 * p->curAv + fabs(p->curAv) * manager.k1 +
-                       newTorqueCurrent[i] * k0 * newTorqueCurrent[i] * k0 * manager.k2 + manager.k3 / 4.0f;
-    }
-#endif
 
-    return newTorqueCurrent;
+return newTorqueCurrent;
 }
 
-
-    /************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/
+/************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/

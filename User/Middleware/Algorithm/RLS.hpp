@@ -4,12 +4,12 @@
 
 #pragma once
 
-namespace Core
-{
-namespace Control
-{
-namespace Math
-{
+// namespace Core
+// {
+// namespace Control
+// {
+// namespace Math
+// {
 
 template <uint32_t dim>
 class RLS
@@ -58,8 +58,7 @@ class RLS
         paramsVector += gainVector * (actualOutput - (sampleVector.trans() * paramsVector)[0][0]);                                // Get params vector
         transMatrix = (transMatrix - gainVector * sampleVector.trans() * transMatrix) / lambda;  // Get transferred matrix
 
-        updateCnt++;
-        lastUpdate = xTaskGetTickCount();
+      
         return paramsVector;
     }
 
@@ -114,6 +113,6 @@ class RLS
     float output;  // Estimated / filtered output
 };
 
-}  // namespace Math
-}  // namespace Control
-}  // namespace Core
+// }  // namespace Math
+// }  // namespace Control
+// }  // namespace Core
