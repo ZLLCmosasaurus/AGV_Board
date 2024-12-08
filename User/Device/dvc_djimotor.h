@@ -426,8 +426,8 @@ protected:
 
     // 内部函数
 
-    void Data_Process();
     void Output();
+    void Data_Process();
 };
 
 /* Exported variables --------------------------------------------------------*/

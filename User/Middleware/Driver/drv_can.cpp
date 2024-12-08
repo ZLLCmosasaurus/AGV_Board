@@ -79,11 +79,7 @@ uint8_t CAN2_0x147_Tx_Data[8];
 uint8_t CAN2_0x148_Tx_Data[8];
 
 /*********舵小板 控制缓冲区***********/
-uint8_t CAN1_0x01A_Tx_Data[8]; // 发送舵轮A轮组矢量速度
-uint8_t CAN1_0x01B_Tx_Data[8]; // 发送舵轮B轮组矢量速度
-uint8_t CAN1_0x01C_Tx_Data[8]; // 发送舵轮C轮组矢量速度
-uint8_t CAN1_0x01D_Tx_Data[8]; // 发送舵轮D轮组矢量速度
-uint8_t CAN1_0x01E_Tx_Data[8]; // 发送当前时刻底盘最大功率
+
 
 uint8_t CAN2_0x01A_Tx_Data[8]; // 发送舵A轮轮组矢量速度
 uint8_t CAN2_0x01B_Tx_Data[8]; // 发送舵B轮轮组矢量速度

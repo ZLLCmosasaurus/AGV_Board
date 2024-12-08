@@ -135,17 +135,13 @@ extern "C"
     extern uint8_t CAN2_0x148_Tx_Data[8];
 
     /*********舵小板 控制缓冲区***********/
-    extern uint8_t CAN1_0x01A_Tx_Data[8]; // 发送舵轮轮组矢量速度
-    extern uint8_t CAN1_0x01B_Tx_Data[8]; // 发送功率控制缩放系数k1,k2
-    extern uint8_t CAN1_0x01C_Tx_Data[8]; // 发送舵轮C轮组矢量速度
-    extern uint8_t CAN1_0x01D_Tx_Data[8]; // 发送舵轮D轮组矢量速度
-    extern uint8_t CAN1_0x01E_Tx_Data[8]; // 发送当前时刻地盘最大功率
 
-    extern uint8_t CAN2_0x01A_Tx_Data[8]; // 发送舵轮轮组矢量速度
-    extern uint8_t CAN2_0x01B_Tx_Data[8]; // 发送功率控制缩放系数k1,k2
-    extern uint8_t CAN2_0x01C_Tx_Data[8]; // 发送舵轮C轮组矢量速度
-    extern uint8_t CAN2_0x01D_Tx_Data[8]; // 发送舵轮D轮组矢量速度
-    extern uint8_t CAN2_0x01E_Tx_Data[8]; // 发送当前时刻地盘最大功率
+
+    extern uint8_t CAN2_0x01A_Tx_Data[8]; 
+    extern uint8_t CAN2_0x01B_Tx_Data[8]; 
+    extern uint8_t CAN2_0x01C_Tx_Data[8]; 
+    extern uint8_t CAN2_0x01D_Tx_Data[8]; 
+    extern uint8_t CAN2_0x01E_Tx_Data[8]; 
 
     /* Exported function declarations ---------------------------------------------*/
 

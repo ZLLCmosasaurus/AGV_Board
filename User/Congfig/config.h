@@ -36,15 +36,19 @@
 #ifdef AGV_BOARD_A
 #define ENCODER_ID A_ENCODER_ID
 #define AGV_BOARD_ID A_STEERING_CAN_ID
+#define AGV_BOARD_CAN_DATA CAN2_0x01A_Tx_Data
 #elif defined(AGV_BOARD_B)
 #define ENCODER_ID B_ENCODER_ID
 #define AGV_BOARD_ID B_STEERING_CAN_ID
+#define AGV_BOARD_CAN_DATA CAN2_0x01B_Tx_Data
 #elif defined(AGV_BOARD_C)
 #define ENCODER_ID C_ENCODER_ID
 #define AGV_BOARD_ID C_STEERING_CAN_ID
+#define AGV_BOARD_CAN_DATA CAN2_0x01C_Tx_Data
 #elif defined(AGV_BOARD_D)
 #define ENCODER_ID D_ENCODER_ID
 #define AGV_BOARD_ID D_STEERING_CAN_ID
+#define AGV_BOARD_CAN_DATA CAN2_0x01D_Tx_Data
 #else
 #error "请定义舵轮板类型 (AGV_BOARD_A/B/C/D)"
 #endif

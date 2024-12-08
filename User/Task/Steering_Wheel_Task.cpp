@@ -173,6 +173,12 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 
 }
 
+void Command_Send(Class_Steering_Wheel *steering_wheel)
+{
+    CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data,8);     //发送本轮组电机指令
+    CAN_Send_Data(&hcan2, AGV_BOARD_ID, AGV_BOARD_CAN_DATA, 8); //发送本轮组电机的转速和扭矩
+}
+
 void Steering_Wheel_Task(void *pvParameters)
 {
     static float steering_wheel_dt;
