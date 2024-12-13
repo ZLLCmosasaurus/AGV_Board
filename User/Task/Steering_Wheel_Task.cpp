@@ -1,6 +1,6 @@
 #include "Steering_Wheel_Task.h"
 #include "FreeRTOS.h"
-
+#include "cmsis_os2.h"                  // ::CMSIS:RTOS2
 // 应该要加互斥锁
 void State_Update(Class_Steering_Wheel *steering_wheel)
 {
@@ -171,7 +171,7 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 #if POWER_CONTROL == 1
 
     // 运行功率限制任务
-    steering_wheel->Power_Limit.Power_Task(&steering_wheel->Power_Management);
+    steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
     // 更新电机输出值
 #ifdef AGV_BOARD_A

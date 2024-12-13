@@ -51,7 +51,7 @@ float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque)
     return cmdPower;
 }
 
-float Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data)
+void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data)
 {
     // 功率计算和RLS更新
     static Matrixf<2, 1> samples;
@@ -123,7 +123,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
     // 计算理论功率
     for (uint8_t i = 0; i < 8; i++)
     {
-        power_management.Motor_Data->theoretical_power = Calculate_Theoretical_Power(power_management.Motor_Data.omega, power_management.Motor_Data.torque);
+        power_management.Motor_Data->theoretical_power = Calculate_Theoretical_Power(power_management.Motor_Data[i].omega, power_management.Motor_Data[i].torque);
 
         power_management.Theoretical_Total_Power += power_management.Motor_Data[i].theoretical_power;
     }

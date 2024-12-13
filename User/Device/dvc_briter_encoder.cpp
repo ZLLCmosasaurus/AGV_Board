@@ -1,6 +1,45 @@
 #include "dvc_briter_encoder.h"
 #include "string.h"
-void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate,uint16_t __Lsbs_Per_Encoder_Round, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction)
+
+/**
+ * @brief 分配CAN发送缓冲区
+ *
+ * @param hcan CAN编号
+ * @param __CAN_ID CAN ID
+ * @return uint8_t* 缓冲区指针
+ */
+uint8_t *allocate_tx_data(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID)
+{
+    uint8_t *tmp_tx_data_ptr;
+    if (hcan == &hcan2)
+    {
+        switch (__CAN_ID)
+        {
+        case (A_ENCODER_ID_e):
+        {
+            tmp_tx_data_ptr = (CAN2_0x01A_Tx_Data);
+        }
+        break;
+
+        case (B_ENCODER_ID_e):
+        {
+            tmp_tx_data_ptr = (CAN2_0x01B_Tx_Data);
+        }
+
+        case (C_ENCODER_ID_e):
+        {
+            tmp_tx_data_ptr = (CAN2_0x01C_Tx_Data);
+        }
+        case (D_ENCODER_ID_e):
+        {
+            tmp_tx_data_ptr = (CAN2_0x01D_Tx_Data);
+        }
+        break;
+        }
+        return (tmp_tx_data_ptr);
+    }
+}
+void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate, uint16_t __Lsbs_Per_Encoder_Round, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction)
 {
     if (hcan->Instance == CAN1)
     {
@@ -18,7 +57,6 @@ void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_I
     Parameter.Increment_Direction = __Increment_Direction;
 }
 
-
 void Class_Briter_Encoder::Data_Process()
 {
     static uint32_t Now_Time = 0;
@@ -33,9 +71,9 @@ void Class_Briter_Encoder::Data_Process()
     Now_Time = DWT_GetTimeline_us();
     delta_time = Now_Time - Pre_Time;
 
-    memcpy(&Data.Raw_Value, &tmp_buffer->Data, 4);                                                                               // 原始数据
+    memcpy(&Data.Raw_Value, &tmp_buffer->Data, 4);                                                                              // 原始数据
     Data.Now_Multi_Turn_Angle = Data.Raw_Value * 360.0 / Parameter.Lsbs_Per_Encoder_Round;                                      // 求多圈角度
-    Data.Now_Angle = fmod(Data.Now_Multi_Turn_Angle, 360.0f);                                                                 // 求单圈角度
+    Data.Now_Angle = fmod(Data.Now_Multi_Turn_Angle, 360.0f);                                                                   // 求单圈角度
     Data.Now_Omega = (Data.Raw_Value - Data.Pre_Raw_Value) / delta_time * 1000000.0 * 360.0 / Parameter.Lsbs_Per_Encoder_Round; // 求角速度，deg/s
 
     // 存储预备信息
