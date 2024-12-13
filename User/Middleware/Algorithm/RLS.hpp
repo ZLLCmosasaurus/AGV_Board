@@ -26,7 +26,7 @@ class RLS
      * @param lambda_ The forgotten index
      */
     constexpr RLS(float delta_, float lambda_)
-        : dimension(dim), lambda(lambda_), delta(delta_), lastUpdate(0), updateCnt(0), defaultParamsVector(Matrixf<dim, 1>::zeros())
+        : dimension(dim), lambda(lambda_), delta(delta_), updateCnt(0), defaultParamsVector(Matrixf<dim, 1>::zeros())
     {
         this->reset();
         this->validate();
@@ -92,17 +92,17 @@ class RLS
      * @param None
      * @retval None
      */
-    void validate() const
-    {
-        configASSERT(lambda >= 0.0f || lambda <= 1.0f);
-        configASSERT(delta > 0);
-    }
+//    void validate() const
+//    {
+//        configASSERT(lambda >= 0.0f || lambda <= 1.0f);
+//        configASSERT(delta > 0);
+//    }
 
     uint32_t dimension;  // Dimension of the RLS space
     float lambda;        // The forget index
     float delta;         // Intialized value of the transferred matrix
 
-    TickType_t lastUpdate;  // Last update tick
+  //  TickType_t lastUpdate;  // Last update tick
     uint32_t updateCnt;     // Total update Count
 
     /*RLS relvant matrix*/
