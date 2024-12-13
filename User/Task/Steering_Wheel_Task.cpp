@@ -11,8 +11,8 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
 
         所以需要：新角度 = 360° - 编码器角度
     */
-    steering_wheel->Now_Angle = 360.0 - steering_wheel->Encoder.Data.Now_Angle * ENCODER_TO_OUTPUT_RATIO;
-    steering_wheel->Now_Omega = -steering_wheel->Encoder.Data.Now_Omega * ENCODER_TO_OUTPUT_RATIO;
+    steering_wheel->Now_Angle = 360.0 - steering_wheel->Encoder.Get_Now_Angle() * ENCODER_TO_OUTPUT_RATIO;
+    steering_wheel->Now_Omega = -steering_wheel->Encoder.Get_Now_Omega() * ENCODER_TO_OUTPUT_RATIO;
     steering_wheel->Now_Velocity = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * Wheel_Diameter / 2; // 这里有点怪异，因为Get_Now_Omega_Radian和Set_Target_Omega_Radian返回的数据不一样
 
 // 更新功率控制所需的数据
@@ -76,7 +76,7 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
 
 void Command_Update(Class_Steering_Wheel *steering_wheel)
 {
-    
+
 }
 
 /*
@@ -110,7 +110,7 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     float temp_err = 0.0f;
 
     // 1. 角度优化
-    if (steering_wheel->parameter.deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
+    if (steering_wheel->deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
     {
         float temp_min;
 
@@ -143,7 +143,7 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     }
 
     // 2. 优劣弧优化，实际上角度优化那里已经完成了
-    if (steering_wheel->parameter.arc_optimization == ENABLE_MINOR_ARC_OPTIMIZEATION)
+    if (steering_wheel->arc_optimization == ENABLE_MINOR_ARC_OPTIMIZEATION)
     {
         if (temp_err > 180.0f)
         {

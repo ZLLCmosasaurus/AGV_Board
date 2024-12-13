@@ -55,8 +55,8 @@
 
 typedef struct
 {
-    float16_t omega;         // 反馈的转子转速,rpm
-    float16_t torque;        // 反馈的转子转矩,Nm
+    __fp16 omega;         // 反馈的转子转速,rpm
+    __fp16 torque;        // 反馈的转子转矩,Nm
     float theoretical_power; // 理论功率
     float scaled_power;      // 功率（缩放后）
 
@@ -80,7 +80,7 @@ class Class_Power_Limit
 public:
     float Calculate_Theoretical_Power(float omega, float torque); // 计算单个电机的理论功率
     float Calculate_Toque(float omega, float power);              // 根据功率计算转矩
-
+void Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data);
     void Power_Task(Struct_Power_Management &power_management);
     float Get_K1();
     float Get_K2();

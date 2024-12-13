@@ -60,7 +60,7 @@
 /*
     轮组数据
 */
-#define ENCODER_TO_OUTPUT_RATIO = 1.0f / 4.0f; // 编码器转四圈，输出轴转一圈
+#define ENCODER_TO_OUTPUT_RATIO  1.0f / 4.0f; // 编码器转四圈，输出轴转一圈
 
 #define Wheel_Diameter 0.12000000f // 轮子直径，单位为m
 

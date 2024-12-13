@@ -1,5 +1,5 @@
 #include "dvc_briter_encoder.h"
-
+#include "string.h"
 void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate,uint16_t __Lsbs_Per_Encoder_Round, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction)
 {
     if (hcan->Instance == CAN1)
@@ -33,9 +33,9 @@ void Class_Briter_Encoder::Data_Process()
     Now_Time = DWT_GetTimeline_us();
     delta_time = Now_Time - Pre_Time;
 
-    memcpy(Data.Raw_Value, &tmp_buffer->Data, 4);                                                                               // 原始数据
+    memcpy(&Data.Raw_Value, &tmp_buffer->Data, 4);                                                                               // 原始数据
     Data.Now_Multi_Turn_Angle = Data.Raw_Value * 360.0 / Parameter.Lsbs_Per_Encoder_Round;                                      // 求多圈角度
-    Data.Now_Angle = Data.Now_Multi_Turn_Angle % 360;                                                                           // 求单圈角度
+    Data.Now_Angle = fmod(Data.Now_Multi_Turn_Angle, 360.0f);                                                                 // 求单圈角度
     Data.Now_Omega = (Data.Raw_Value - Data.Pre_Raw_Value) / delta_time * 1000000.0 * 360.0 / Parameter.Lsbs_Per_Encoder_Round; // 求角速度，deg/s
 
     // 存储预备信息

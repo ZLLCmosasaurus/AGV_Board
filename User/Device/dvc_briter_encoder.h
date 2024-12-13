@@ -100,6 +100,9 @@ public:
     void TIM_PeriodElapsedCallback();
     void TIM_Alive_PeriodElapsedCallback();
 
+    inline float Get_Now_Angle();
+    inline float Get_Now_Omega();
+
 protected:
     // 初始化相关变量
 
@@ -127,6 +130,16 @@ protected:
 
     // 内部函数
     void Data_Process();
+};
+
+float Class_Briter_Encoder::Get_Now_Omega()
+{
+    return Data.Now_Omega;
+}
+
+float Class_Briter_Encoder::Get_Now_Angle()
+{
+    return Data.Now_Angle;
 }
 
 #endif // !BRITER
