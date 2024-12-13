@@ -336,6 +336,7 @@ public:
     inline float Get_Target_Omega_Angle();
     inline float Get_Target_Torque();
     inline float Get_Out();
+    inline float Get_Gearbox_Rate();
 
     inline void Set_Now_Angle(float __Now_Angle);
     inline void Set_Now_Radian(float __Now_Radian);
@@ -416,7 +417,7 @@ protected:
     // 当前的速度, rad/s
     float Now_Omega_Radian = 0.0f;
 
-    // 目标的扭矩, 直接采用反馈值
+    // 目标的扭矩,
     float Target_Torque = 0.0f;
     // 当前的扭矩, 直接采用反馈值
     float Now_Torque = 0.0f;
@@ -433,6 +434,10 @@ protected:
 /* Exported variables --------------------------------------------------------*/
 
 /* Exported function declarations --------------------------------------------*/
+void Class_DJI_Motor_C620::Get_Gearbox_Rate()
+{
+    return (Gearbox_Rate);
+}
 
 void Class_DJI_Motor_C620::Set_Now_Angle(float __Now_Angle)
 {
@@ -1025,12 +1030,13 @@ float Class_DJI_Motor_C620::Get_Target_Omega_Angle()
 }
 
 /**
- * @brief 获取目标的扭矩, 直接采用反馈值
+ * @brief 获取目标的扭矩, 转子扭矩，nm
  *
- * @return float 目标的扭矩, 直接采用反馈值
+ * @return float 获取目标的扭矩, 转子扭矩，nm
  */
 float Class_DJI_Motor_C620::Get_Target_Torque()
 {
+
     return (Target_Torque);
 }
 
@@ -1112,6 +1118,7 @@ void Class_DJI_Motor_C620::Set_Target_Torque(float __Target_Torque)
 void Class_DJI_Motor_C620::Set_Out(float __Out)
 {
     Out = __Out;
+    Output();
 }
 
 #endif

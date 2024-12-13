@@ -21,13 +21,7 @@
 
 Struct_CAN_Manage_Object CAN1_Manage_Object = {0};
 Struct_CAN_Manage_Object CAN2_Manage_Object = {0};
-CAN_Massage_Unit Massage_queue[CAN_MASSAGE_QUEUE_SIZE] = {
-    {&hcan1, 0x01a, CAN1_0x01A_Tx_Data, 8},
-    {&hcan1, 0x01b, CAN1_0x01C_Tx_Data, 8},
-    {&hcan1, 0x01c, CAN1_0x01B_Tx_Data, 8},
-    {&hcan1, 0x01d, CAN1_0x01D_Tx_Data, 8},
-};
-static int8_t CAN1_Tx_Index = 0;
+
 
 // CAN通信发送缓冲区
 uint8_t CAN1_0x1ff_Tx_Data[8];

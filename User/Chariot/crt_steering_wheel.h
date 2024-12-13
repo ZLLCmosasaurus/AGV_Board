@@ -87,4 +87,6 @@ public:
     STEERING_WHEEL_DEG_POTIMIZATION_T deg_optimization= ENABLE_MINOR_DEG_OPTIMIZEATION; // 角度优化
 };
 
+
+extern Class_Steering_Wheel steering_wheel;
 #endif //

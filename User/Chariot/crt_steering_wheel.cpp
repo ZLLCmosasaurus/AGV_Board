@@ -1,28 +1,33 @@
 #include "crt_steering_wheel.h"
-
+Class_Steering_Wheel steering_wheel;
 void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
 
+    //
     switch (CAN_RxMessage->Header.StdId)
     {
     case 0x02A:
     {
-        memcpy(&Power_Management.Steering_Wheel_Motor_Data[0], CAN_RxMessage->Data, 8);
+        memcpy(&Power_Management.Motor_Data[0], CAN_RxMessage->Data, 4);
+        memcpy(&Power_Management.Motor_Data[1], CAN_RxMessage->Data + 4, 4);
     }
     break;
     case 0x02B:
     {
-        memcpy(&Power_Management.Steering_Wheel_Motor_Data[1], CAN_RxMessage->Data, 8);
+        memcpy(&Power_Management.Motor_Data[2], CAN_RxMessage->Data, 4);
+        memcpy(&Power_Management.Motor_Data[3], CAN_RxMessage->Data + 4, 4);
     }
     break;
     case 0x02C:
     {
-        memcpy(&Power_Management.Steering_Wheel_Motor_Data[2], CAN_RxMessage->Data, 8);
+        memcpy(&Power_Management.Motor_Data[4], CAN_RxMessage->Data, 4);
+        memcpy(&Power_Management.Motor_Data[5], CAN_RxMessage->Data + 4, 4);
     }
     break;
     case 0x02D:
     {
-        memcpy(&Power_Management.Steering_Wheel_Motor_Data[3], CAN_RxMessage->Data, 8);
+        memcpy(&Power_Management.Motor_Data[6], CAN_RxMessage->Data, 4);
+        memcpy(&Power_Management.Motor_Data[7], CAN_RxMessage->Data + 4, 4);
     }
     break;
     }
