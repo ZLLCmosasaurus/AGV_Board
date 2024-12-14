@@ -20,14 +20,14 @@
 
 /* Private variables ---------------------------------------------------------*/
 Class_Power_Limit Power_Limit;
-RLS rls;
+RLS<2> rls(1e-5f, 0.99999f);
 /* Private function declarations ---------------------------------------------*/
 static inline bool floatEqual(float a, float b) { return fabs(a - b) < 1e-5f; }
 
 static inline float rpm2av(float rpm) { return rpm * (float)PI / 30.0f; }
 
 static inline float av2rpm(float av) { return av * 30.0f / (float)PI; }
-static inline float fmax(float a, float b) { return (a > b) ? a : b; }
+static inline float my_fmax(float a, float b) { return (a > b) ? a : b; }
 /* Function prototypes -------------------------------------------------------*/
 /**
  * @brief 返回单个电机的计算功率
@@ -64,13 +64,13 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
         if (actual_power > 5)
         {
             // 计算有效功率
-            effectivePower += motor_data[i].torque *
-                              rpm2av(motor_data[i].omega);
+            effectivePower += motor_data[i].feedback_torque *
+                              rpm2av(motor_data[i].feedback_omega);
 
             // 更新样本数据
-            samples[0][0] += fabsf(rpm2av(motor_data[i].omega));
-            samples[1][0] += motor_data[i].torque *
-                             motor_data[i].torque;
+            samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega));
+            samples[1][0] += motor_data[i].feedback_torque *
+                             motor_data[i].feedback_torque;
         }
     }
 
@@ -78,8 +78,8 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
     params = rls.update(samples, actual_power - effectivePower - 8 * k3);
 
     // 参数限制
-    k1 = fmax(params[0][0], 1e-5f); // 防止k1为负
-    k2 = fmax(params[1][0], 1e-5f); // 防止k2为负
+    k1 = my_fmax(params[0][0], 1e-5f); // 防止k1为负
+    k2 = my_fmax(params[1][0], 1e-5f); // 防止k2为负
 }
 /**
  * @brief 返回扭矩，单位为Nm，用返回值的时候要转化到控制量
@@ -89,7 +89,7 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
  * @param torque pid输出的扭矩，单位为Nm
  * @return float
  */
-float Class_Power_Limit::Calculate_Toque(float omega, float power)
+float Class_Power_Limit::Calculate_Toque(float omega, float power,float torque)
 {
 
     float newTorqueCurrent = 0.0f;
@@ -112,18 +112,17 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power)
     return newTorqueCurrent;
 }
 
-
 /**
- * @brief 
- * 
- * @param power_management 
+ * @brief
+ *
+ * @param power_management
  */
 void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
 {
     // 计算理论功率
     for (uint8_t i = 0; i < 8; i++)
     {
-        power_management.Motor_Data->theoretical_power = Calculate_Theoretical_Power(power_management.Motor_Data[i].omega, power_management.Motor_Data[i].torque);
+        power_management.Motor_Data->theoretical_power = Calculate_Theoretical_Power(power_management.Motor_Data[i].feedback_omega, power_management.Motor_Data[i].torque);
 
         power_management.Theoretical_Total_Power += power_management.Motor_Data[i].theoretical_power;
     }
@@ -145,11 +144,10 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
         power_management.Scaled_Total_Power += power_management.Motor_Data[i].scaled_power;
     }
 
-
-    //更新输出扭矩
+    // 更新输出扭矩
     for (uint8_t i = 0; i < 8; i++)
     {
-        power_management.Motor_Data[i].output = Calculate_Toque(power_management.Motor_Data[i].omega, power_management.Motor_Data[i].scaled_power) * TORQUE_TO_CMD_CURRENT;
+        power_management.Motor_Data[i].output = Calculate_Toque(power_management.Motor_Data[i].feedback_omega, power_management.Motor_Data[i].scaled_power,power_management.Motor_Data[i].torque) * TORQUE_TO_CMD_CURRENT;
     }
 
     Calculate_Power_Coefficient(power_management.Actual_Power, power_management.Motor_Data);

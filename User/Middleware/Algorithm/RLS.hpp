@@ -29,7 +29,7 @@ class RLS
         : dimension(dim), lambda(lambda_), delta(delta_), updateCnt(0), defaultParamsVector(Matrixf<dim, 1>::zeros())
     {
         this->reset();
-        this->validate();
+        //this->validate();
     }
 
     constexpr RLS(float delta_, float lambda_, Matrixf<dim, 1> initParam) : RLS(delta_, lambda_) { defaultParamsVector = initParam; }

@@ -123,8 +123,8 @@ void TIM_Init(TIM_HandleTypeDef *htim, TIM_Call_Back Callback_Function)
  *
  * @param htim TIM编号
  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+//{
     // //判断程序初始化完成
     // if(init_finished == 0)
     // {
@@ -188,6 +188,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //    {
 //        TIM14_Manage_Object.Callback_Function();
 //    }
-}
+//}
 
 /************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/

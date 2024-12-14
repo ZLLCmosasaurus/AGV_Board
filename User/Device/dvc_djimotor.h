@@ -16,7 +16,7 @@
 
 #include "alg_pid.h"
 #include "drv_can.h"
-#include "alg_power_limit.h"
+
 
 /* Exported macros -----------------------------------------------------------*/
 
@@ -317,7 +317,7 @@ public:
     // PID角速度环控制
     Class_PID PID_Omega;
 
-    friend class Class_Power_Limit ;
+    
 
     void Init(CAN_HandleTypeDef *__hcan, Enum_DJI_Motor_ID __CAN_ID, Enum_DJI_Motor_Control_Method __Control_Method = DJI_Motor_Control_Method_OMEGA, float __Gearbox_Rate = 13.933f, float __Torque_Max = 16384.0f);
 

@@ -16,8 +16,8 @@
 
 /* Exported macros -----------------------------------------------------------*/
 // 舵小板选择
- #define AGV_BOARD_A //不同舵轮对应宏定义
-// #define AGV_BOARD_B
+// #define AGV_BOARD_A //不同舵轮对应宏定义
+ #define AGV_BOARD_B
 // #define AGV_BOARD_C
 // #define AGV_BOARD_D
 

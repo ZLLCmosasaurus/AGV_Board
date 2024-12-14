@@ -55,12 +55,14 @@
 
 typedef struct
 {
-    __fp16 omega;         // 反馈的转子转速,rpm
-    __fp16 torque;        // 反馈的转子转矩,Nm
+    __fp16 feedback_omega;  // 反馈的转子转速,rpm
+    __fp16 feedback_torque; // 反馈的转子转矩,Nm
+
+    __fp16 torque;           // pid输出的转子转矩,Nm
     float theoretical_power; // 理论功率
     float scaled_power;      // 功率（缩放后）
 
-    int16_t output;        // 输出扭矩电流控制值（16384）
+    int16_t output;        // 最终输出扭矩电流控制值（16384）
 } Struct_Power_Motor_Data; //
 
 typedef struct
@@ -78,15 +80,15 @@ typedef struct
 class Class_Power_Limit
 {
 public:
-    float Calculate_Theoretical_Power(float omega, float torque); // 计算单个电机的理论功率
-    float Calculate_Toque(float omega, float power);              // 根据功率计算转矩
-void Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data);
+    float Calculate_Theoretical_Power(float omega, float torque);  // 计算单个电机的理论功率
+    float Calculate_Toque(float omega, float power, float torque); // 根据功率计算转矩
+    void Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data);
     void Power_Task(Struct_Power_Management &power_management);
-    float Get_K1();
-    float Get_K2();
+    inline float Get_K1();
+    inline float Get_K2();
 
-    void Set_K1(float _k1);
-    void Set_K2(float _k2);
+    inline void Set_K1(float _k1);
+    inline void Set_K2(float _k2);
 
 protected:
     // 转矩系数 rad转rpm系数

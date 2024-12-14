@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+//#include "Steering_Wheel_Task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,6 +54,13 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for steering_wheel_task */
+osThreadId_t steering_wheel_taskHandle;
+const osThreadAttr_t steering_wheel_task_attributes = {
+  .name = "steering_wheel_task",
+  .stack_size = 528 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -61,8 +68,26 @@ const osThreadAttr_t defaultTask_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void Steering_Wheel_Task(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* Hook prototypes */
+void configureTimerForRunTimeStats(void);
+unsigned long getRunTimeCounterValue(void);
+
+/* USER CODE BEGIN 1 */
+/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
+__weak void configureTimerForRunTimeStats(void)
+{
+
+}
+
+__weak unsigned long getRunTimeCounterValue(void)
+{
+return 0;
+}
+/* USER CODE END 1 */
 
 /**
   * @brief  FreeRTOS initialization
@@ -94,6 +119,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
+  /* creation of steering_wheel_task */
+  steering_wheel_taskHandle = osThreadNew(Steering_Wheel_Task, NULL, &steering_wheel_task_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -120,6 +148,24 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_Steering_Wheel_Task */
+/**
+* @brief Function implementing the steering_wheel_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Steering_Wheel_Task */
+__weak void Steering_Wheel_Task(void *argument)
+{
+  /* USER CODE BEGIN Steering_Wheel_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Steering_Wheel_Task */
 }
 
 /* Private application code --------------------------------------------------*/
