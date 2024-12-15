@@ -57,7 +57,7 @@ typedef enum
 class Class_Steering_Wheel
 {
 public:
-    void Init();
+    void Init(void);
 
     void CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage);
     void CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage);

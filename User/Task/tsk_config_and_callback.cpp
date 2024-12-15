@@ -24,13 +24,22 @@
 #include "drv_dwt.h"
 #include "config.h"
 #include "drv_can.h"
-#include "crt_steering_wheel.h"
-/* Private macros ------------------------------------------------------------*/
+#include "FreeRTOS.h"
+#include "cmsis_os.h" // ::CMSIS:RTOS2
+#include "task.h"
 
+#include "Steering_Wheel_Task.h"
+/* Private macros ------------------------------------------------------------*/
+//osThreadId_t steering_wheel_taskHandle;
+//const osThreadAttr_t steering_wheel_task_attributes = {
+//    .name = "steering_wheel_task",
+//    .stack_size = 528 * 4,
+//    .priority = (osPriority_t)osPriorityRealtime,
+//};
 /* Private types -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-Class_Steering_Wheel Steering_Wheel;
+
 
 /* Private function declarations ---------------------------------------------*/
 
@@ -46,21 +55,20 @@ void Agv_Board_CAN1_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
     {
     case (0x201):
     {
-        Steering_Wheel.Directive_Motor.CAN_RxCpltCallback(CAN_RxMessage->Data);
+        steering_wheel.Directive_Motor.CAN_RxCpltCallback(CAN_RxMessage->Data);
     }
     break;
 
     case (0x202):
     {
-        Steering_Wheel.Motion_Motor.CAN_RxCpltCallback(CAN_RxMessage->Data);
+        steering_wheel.Motion_Motor.CAN_RxCpltCallback(CAN_RxMessage->Data);
     }
     break;
     case ENCODER_ID:
     {
-        Steering_Wheel.Encoder.CAN_RxCpltCallback(CAN_RxMessage->Data);
+        steering_wheel.Encoder.CAN_RxCpltCallback(CAN_RxMessage->Data);
     }
     break;
-   
     }
 }
 
@@ -72,20 +80,20 @@ void Agv_Board_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
     switch (CAN_RxMessage->Header.StdId)
     {
-        case (AGV_BOARD_ID):
-        case 0x01E:
-        {
-            Steering_Wheel.CAN_RxChassisCallback(CAN_RxMessage);
-        }
-        break;
-        case (0x20A):
-        case (0x20B):
-        case (0x20C):
-        case (0x20D):
-        {
-            Steering_Wheel.CAN_RxAgvBoardCallback(CAN_RxMessage);
-        }
-        break;
+    case (AGV_BOARD_ID):
+    case 0x01E:
+    {
+        steering_wheel.CAN_RxChassisCallback(CAN_RxMessage);
+    }
+    break;
+    case (0x20A):
+    case (0x20B):
+    case (0x20C):
+    case (0x20D):
+    {
+        steering_wheel.CAN_RxAgvBoardCallback(CAN_RxMessage);
+    }
+    break;
     default:
         break;
     }
@@ -93,11 +101,17 @@ void Agv_Board_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 
 #endif
 
+//void OSTaskInit()
+//{
+//    steering_wheel_taskHandle = osThreadNew(Steering_Wheel_Task, NULL, &steering_wheel_task_attributes);
+//}
+
 /**
  * @brief 初始化任务
  *
  */
-extern "C" void Task_Init()
+extern "C" void
+Task_Init()
 {
 
     DWT_Init(72);
@@ -108,6 +122,7 @@ extern "C" void Task_Init()
      * @brief
      *
      */
+	
     CAN_Init(&hcan1, Agv_Board_CAN1_Callback);
     CAN_Init(&hcan2, Agv_Board_CAN2_Callback);
 
@@ -117,7 +132,9 @@ extern "C" void Task_Init()
     // 设备层集成在交互层初始化中，没有显视地初始化
 
     /********************************* 交互层初始化 *********************************/
-    Steering_Wheel.Init();
+    steering_wheel.Init();      
+
+	//OSTaskInit();
 }
 
 /**

@@ -28,7 +28,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tsk_config_and_callback.h"
-#include "Steering_Wheel_Task.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,7 +100,7 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//Task_Init();
+Task_Init();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -120,7 +121,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  Steering_Wheel_Task();
+	  
   }
   /* USER CODE END 3 */
 }

@@ -60,11 +60,11 @@ void Class_Steering_Wheel::Init()
 {
 
     // todo:待调参
-    //Motion_Motor.PID_Omega.Init();
+    Motion_Motor.PID_Omega.Init(0, 0, 0, 0, 0);
     Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA, 14);
 
-    //Directive_Motor.PID_Angle.Init();
-    //Directive_Motor.PID_Omega.Init();
+    Directive_Motor.PID_Angle.Init(0, 0, 0, 0, 0);
+    Directive_Motor.PID_Omega.Init(0, 0, 0, 0, 0);
     Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_ANGLE, 8);
 
     Encoder.Init(&hcan1, static_cast<Enum_Encoder_ID>(ENCODER_ID));

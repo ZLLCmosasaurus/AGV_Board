@@ -58,8 +58,8 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t steering_wheel_taskHandle;
 const osThreadAttr_t steering_wheel_task_attributes = {
   .name = "steering_wheel_task",
-  .stack_size = 528 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .stack_size = 800 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,7 +68,7 @@ const osThreadAttr_t steering_wheel_task_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
-void Steering_Wheel_Task(void *argument);
+extern void Steering_Wheel_Task(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -133,6 +133,8 @@ void MX_FREERTOS_Init(void) {
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
+int i=0;
+int n=0;
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
@@ -145,27 +147,10 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+     i++;
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
-}
-
-/* USER CODE BEGIN Header_Steering_Wheel_Task */
-/**
-* @brief Function implementing the steering_wheel_task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_Steering_Wheel_Task */
-__weak void Steering_Wheel_Task(void *argument)
-{
-  /* USER CODE BEGIN Steering_Wheel_Task */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END Steering_Wheel_Task */
 }
 
 /* Private application code --------------------------------------------------*/

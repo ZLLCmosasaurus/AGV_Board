@@ -11,7 +11,7 @@
 uint8_t *allocate_tx_data(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID)
 {
     uint8_t *tmp_tx_data_ptr;
-    if (hcan == &hcan2)
+    if (hcan == &hcan1)
     {
         switch (__CAN_ID)
         {
