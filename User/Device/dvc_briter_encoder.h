@@ -10,6 +10,28 @@
 /* Exported macros -----------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
+typedef enum
+{
+    BRITER_ENCODER_DATA_LENGTH_4 = 0x04,
+    BRITER_ENCODER_DATA_LENGTH_5 = 0x05,
+    BRITER_ENCODER_DATA_LENGTH_7 = 0x07,
+} BRITER_ENCODER_TRANS_LENGTH_t;
+
+typedef enum
+{
+    GET_TOTAL_ANGLE = 0x01,
+    SET_CAN_ID = 0x02,
+    SET_CAN_BAUD_RATE = 0x03,
+    SET_CALLBACK_MODE = 0x04,
+    SET_CALLBACK_PERIOD = 0x05,
+    SET_CURRENT_POS_ZERO_POS = 0x06,
+    SET_INCREMENT_DIRECTION = 0x07,
+    SET_CURRENT_POS_MID_POS = 0x0C,
+    SET_CURRENT_POS_SPECIFIC_VALUE = 0x0D,
+    SET_CURRENT_POS_5ROUND_VALUE = 0x0F
+
+} BRITER_ENCODER_COMMAND_CODE_t;
+
 /**
  * @brief 波特率
  *
@@ -24,6 +46,15 @@ typedef enum
 
 } BRITER_ENCODER_CAN_BAUD_RATE_t;
 
+typedef struct
+{
+    uint8_t length;
+    uint8_t encoder_address;
+    uint8_t command_code;
+    uint8_t data[5];
+
+} briter_encoder_command_t;
+
 /**
  * @brief 增量方向
  *
@@ -34,8 +65,6 @@ typedef enum
     BRITER_ENCODER_INCREMENT_DIRECTION_CCW
 
 } BRITER_ENCODER_INCREMENT_DIRECTION_t;
-
-
 
 /**
  * @brief 编码器canid
@@ -62,8 +91,8 @@ typedef enum
 // 解析过的布瑞特编码器数据
 typedef struct
 {
-    uint32_t Raw_Value;     // 最原始的反馈数据
-    uint32_t Pre_Raw_Value; // 上一时刻的反馈数据
+    int32_t Raw_Value;     // 最原始的反馈数据
+    int32_t Pre_Raw_Value; // 上一时刻的反馈数据
 
     float Now_Multi_Turn_Angle; // 编码器当前多圈角度，deg
     float Now_Angle;            // 编码器当前单圈内角度，deg
@@ -94,14 +123,18 @@ typedef struct
 class Class_Briter_Encoder
 {
 public:
-    void Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate=BRITER_ENCODER_SET_CAN_BAUD_RATE_1M, uint16_t __Lsbs_Per_Encoder_Round=1024, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction=BRITER_ENCODER_INCREMENT_DIRECTION_CW);
+    void Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate = BRITER_ENCODER_SET_CAN_BAUD_RATE_1M, uint16_t __Lsbs_Per_Encoder_Round = 1024, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction = BRITER_ENCODER_INCREMENT_DIRECTION_CW);
 
     void CAN_RxCpltCallback(uint8_t *Rx_Data);
     void TIM_PeriodElapsedCallback();
     void TIM_Alive_PeriodElapsedCallback();
 
+    void Briter_Encoder_Request_Total_Angle(void);
+
     inline float Get_Now_Angle();
     inline float Get_Now_Omega();
+
+    void output(void);
 
 protected:
     // 初始化相关变量
@@ -128,8 +161,11 @@ protected:
     // 经处理过的数据
     Struct_Briter_Encoder_Data Data;
 
-    // 内部函数
-    void Data_Process();
+    Struct_Briter_Encoder_Can_Data Command;
+
+        // 内部函数
+        void
+        Data_Process();
 };
 
 float Class_Briter_Encoder::Get_Now_Omega()

@@ -1,6 +1,6 @@
 #include "dvc_briter_encoder.h"
 #include "string.h"
-
+#include "config.h"
 /**
  * @brief 分配CAN发送缓冲区
  *
@@ -17,28 +17,35 @@ uint8_t *allocate_tx_data(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID)
         {
         case (A_ENCODER_ID_e):
         {
-            tmp_tx_data_ptr = (CAN2_0x01A_Tx_Data);
+            tmp_tx_data_ptr = (CAN1_0x0A_Tx_Data);
         }
         break;
 
         case (B_ENCODER_ID_e):
         {
-            tmp_tx_data_ptr = (CAN2_0x01B_Tx_Data);
+            tmp_tx_data_ptr = (CAN1_0x0B_Tx_Data);
         }
-
+	break;
         case (C_ENCODER_ID_e):
         {
-            tmp_tx_data_ptr = (CAN2_0x01C_Tx_Data);
+            tmp_tx_data_ptr = (CAN1_0x0C_Tx_Data);
         }
+	  break;
         case (D_ENCODER_ID_e):
         {
-            tmp_tx_data_ptr = (CAN2_0x01D_Tx_Data);
+            tmp_tx_data_ptr = (CAN1_0x0D_Tx_Data);
         }
         break;
         }
         return (tmp_tx_data_ptr);
     }
 }
+
+void Class_Briter_Encoder::output(void)
+{
+    memcpy(CAN_Tx_Data, &Command, sizeof(Struct_Briter_Encoder_Can_Data));
+}
+
 void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_ID, BRITER_ENCODER_CAN_BAUD_RATE_t __Briter_Encoder_Baud_Rate, uint16_t __Lsbs_Per_Encoder_Round, BRITER_ENCODER_INCREMENT_DIRECTION_t __Increment_Direction)
 {
     if (hcan->Instance == CAN1)
@@ -57,13 +64,13 @@ void Class_Briter_Encoder::Init(CAN_HandleTypeDef *hcan, Enum_Encoder_ID __CAN_I
     Parameter.Increment_Direction = __Increment_Direction;
 }
 
+float delta_time;
 void Class_Briter_Encoder::Data_Process()
 {
     static uint32_t Now_Time = 0;
     static uint32_t Pre_Time = 0;
 
-    uint16_t delta_time;
-    int32_t delta_encoder;
+  
     uint32_t tmp_encoder;
     int16_t tmp_omega;
 
@@ -73,8 +80,8 @@ void Class_Briter_Encoder::Data_Process()
 
     memcpy(&Data.Raw_Value, &tmp_buffer->Data, 4);                                                                              // 原始数据
     Data.Now_Multi_Turn_Angle = Data.Raw_Value * 360.0 / Parameter.Lsbs_Per_Encoder_Round;                                      // 求多圈角度
-    Data.Now_Angle = fmod(Data.Now_Multi_Turn_Angle, 360.0f);                                                                   // 求单圈角度
-    Data.Now_Omega = (Data.Raw_Value - Data.Pre_Raw_Value) / delta_time * 1000000.0 * 360.0 / Parameter.Lsbs_Per_Encoder_Round; // 求角速度，deg/s
+    Data.Now_Angle = fmod(Data.Now_Multi_Turn_Angle, 360.0f*OUTPUT_TO_ENCODER_RATIO);                                                                   // 求单圈角度
+    Data.Now_Omega = (float)(Data.Raw_Value - Data.Pre_Raw_Value) / delta_time * 1000000.0 * 360.0 / Parameter.Lsbs_Per_Encoder_Round; // 求角速度，deg/s
 
     // 存储预备信息
     Data.Pre_Raw_Value = Data.Raw_Value;
@@ -110,4 +117,17 @@ void Class_Briter_Encoder::TIM_Alive_PeriodElapsedCallback()
         Encoder_Status = Encoder_Status_ENABLE;
     }
     Pre_Flag = Flag;
+}
+
+void Class_Briter_Encoder::Briter_Encoder_Request_Total_Angle(void)
+{
+
+    Command.Length = BRITER_ENCODER_DATA_LENGTH_4;
+    Command.Encoder_Address = CAN_ID;
+    Command.Command_Code = GET_TOTAL_ANGLE;
+
+    uint8_t trans_data[5];
+    memcpy(Command.Data, &trans_data, 5);
+
+    output();
 }
