@@ -136,11 +136,11 @@ extern "C"
 
     /*********舵小板 控制缓冲区***********/
 
-    extern uint8_t CAN2_0x01A_Tx_Data[8];
-    extern uint8_t CAN2_0x01B_Tx_Data[8];
-    extern uint8_t CAN2_0x01C_Tx_Data[8];
-    extern uint8_t CAN2_0x01D_Tx_Data[8];
-    extern uint8_t CAN2_0x01E_Tx_Data[8];
+    extern uint8_t CAN2_0x02A_Tx_Data[8];
+    extern uint8_t CAN2_0x02B_Tx_Data[8];
+    extern uint8_t CAN2_0x02C_Tx_Data[8];
+    extern uint8_t CAN2_0x02D_Tx_Data[8];
+
 
     extern uint8_t CAN1_0x0A_Tx_Data[8];
     extern uint8_t CAN1_0x0B_Tx_Data[8];

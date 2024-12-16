@@ -86,10 +86,10 @@ void Agv_Board_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
         steering_wheel.CAN_RxChassisCallback(CAN_RxMessage);
     }
     break;
-    case (0x20A):
-    case (0x20B):
-    case (0x20C):
-    case (0x20D):
+    case (0x02A):
+    case (0x02B):
+    case (0x02C):
+    case (0x02D):
     {
         steering_wheel.CAN_RxAgvBoardCallback(CAN_RxMessage);
     }

@@ -105,57 +105,57 @@ invert_flag = 0（不反转）
 */
 void Control_Update(Class_Steering_Wheel *steering_wheel)
 {
-   float temp_err = 0.0f;
+//   float temp_err = 0.0f;
 
-   // 1. 角度优化
-   if (steering_wheel->deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
-   {
-       float temp_min;
+//   // 1. 角度优化
+//   if (steering_wheel->deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
+//   {
+//       float temp_min;
 
-       // 计算误差，考虑当前电机状态
-       temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
+//       // 计算误差，考虑当前电机状态
+//       temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
 
-       // 标准化到[0, 360)范围
-       while (temp_err > 360.0f)
-           temp_err -= 360.0f;
-       while (temp_err < 0.0f)
-           temp_err += 360.0f;
+//       // 标准化到[0, 360)范围
+//       while (temp_err > 360.0f)
+//           temp_err -= 360.0f;
+//       while (temp_err < 0.0f)
+//           temp_err += 360.0f;
 
-       // 比较路径长度
-       if (fabs(temp_err) < (360.0f - fabs(temp_err)))
-           temp_min = fabs(temp_err);
-       else
-           temp_min = 360.0f - fabs(temp_err);
+//       // 比较路径长度
+//       if (fabs(temp_err) < (360.0f - fabs(temp_err)))
+//           temp_min = fabs(temp_err);
+//       else
+//           temp_min = 360.0f - fabs(temp_err);
 
-       // 判断是否需要切换方向
-       if (temp_min > 90.0f)
-       {
-           steering_wheel->invert_flag = !steering_wheel->invert_flag;
-           // 重新计算误差
-           temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
-       }
-   }
-   else
-   {
-       temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle;
-   }
+//       // 判断是否需要切换方向
+//       if (temp_min > 90.0f)
+//       {
+//           steering_wheel->invert_flag = !steering_wheel->invert_flag;
+//           // 重新计算误差
+//           temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
+//       }
+//   }
+//   else
+//   {
+//       temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle;
+//   }
 
-   // 2. 优劣弧优化，实际上角度优化那里已经完成了
-   if (steering_wheel->arc_optimization == ENABLE_MINOR_ARC_OPTIMIZEATION)
-   {
-       if (temp_err > 180.0f)
-       {
-           temp_err -= 360.0f;
-       }
-       else if (temp_err < -180.0f)
-       {
-           temp_err += 360.0f;
-       }
-   }
-   steering_wheel->Target_Angle = steering_wheel->Now_Angle + temp_err;
+//   // 2. 优劣弧优化，实际上角度优化那里已经完成了
+//   if (steering_wheel->arc_optimization == ENABLE_MINOR_ARC_OPTIMIZEATION)
+//   {
+//       if (temp_err > 180.0f)
+//       {
+//           temp_err -= 360.0f;
+//       }
+//       else if (temp_err < -180.0f)
+//       {
+//           temp_err += 360.0f;
+//       }
+//   }
+//   steering_wheel->Target_Angle = steering_wheel->Now_Angle + temp_err;
 
     // PID参数更新
-    steering_wheel->Motion_Motor.Set_Target_Omega_Radian(steering_wheel->Target_Velocity / Wheel_Diameter * 2 * steering_wheel->invert_flag);
+    steering_wheel->Motion_Motor.Set_Target_Omega_Radian(steering_wheel->Target_Velocity / Wheel_Diameter * 2/* * steering_wheel->invert_flag*/);
     steering_wheel->Motion_Motor.Set_Now_Omega_Radian(steering_wheel->Now_Velocity / Wheel_Diameter * 2); // Get_Now_Omega_Radian获得的是电机输出轴的角速度，这个角速度放在了data里，Set_Now_Omega_Radian设置的是电机类直属的Now_Omega_Radian
 
     steering_wheel->Directive_Motor.Set_Target_Radian(steering_wheel->Target_Angle * DEG_TO_RAD);
@@ -224,7 +224,7 @@ void Command_Send(Class_Steering_Wheel *steering_wheel)
 {
 
     CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);        // 发送本轮组电机指令
-    // CAN_Send_Data(&hcan2, AGV_BOARD_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
+     CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
 
     steering_wheel->Encoder.Briter_Encoder_Request_Total_Angle();
     CAN_Send_Data(&hcan1, ENCODER_ID, ENCODER_CAN_DATA, 8); // 发送请求编码器数据
