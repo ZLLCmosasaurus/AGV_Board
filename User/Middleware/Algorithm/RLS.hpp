@@ -1,6 +1,6 @@
-//#include "FreeRTOS.h"
+// #include "FreeRTOS.h"
 #include "Matrix.hpp"
-//#include "task.h"
+// #include "task.h"
 
 #pragma once
 
@@ -14,7 +14,7 @@
 template <uint32_t dim>
 class RLS
 {
-   public:
+public:
     /**
      * @brief Delete the default constructor
      */
@@ -29,7 +29,7 @@ class RLS
         : dimension(dim), lambda(lambda_), delta(delta_), updateCnt(0), defaultParamsVector(Matrixf<dim, 1>::zeros())
     {
         this->reset();
-        //this->validate();
+        // this->validate();
     }
 
     constexpr RLS(float delta_, float lambda_, Matrixf<dim, 1> initParam) : RLS(delta_, lambda_) { defaultParamsVector = initParam; }
@@ -40,8 +40,8 @@ class RLS
      */
     void reset()
     {
-        transMatrix  = Matrixf<dim, dim>::eye() * delta;
-        gainVector   = Matrixf<dim, 1>::zeros();
+        transMatrix = Matrixf<dim, dim>::eye() * delta;
+        gainVector = Matrixf<dim, 1>::zeros();
         paramsVector = Matrixf<dim, 1>::zeros();
     }
 
@@ -54,11 +54,10 @@ class RLS
     const Matrixf<dim, 1> &update(Matrixf<dim, 1> &sampleVector, float actualOutput)
     {
         gainVector =
-            (transMatrix * sampleVector) / (1.0f + (sampleVector.trans() * transMatrix * sampleVector)[0][0] / lambda) / lambda;  // Get gain vector
-        paramsVector += gainVector * (actualOutput - (sampleVector.trans() * paramsVector)[0][0]);                                // Get params vector
-        transMatrix = (transMatrix - gainVector * sampleVector.trans() * transMatrix) / lambda;  // Get transferred matrix
+            (transMatrix * sampleVector) / (1.0f + (sampleVector.trans() * transMatrix * sampleVector)[0][0] / lambda) / lambda; // Get gain vector
+        paramsVector += gainVector * (actualOutput - (sampleVector.trans() * paramsVector)[0][0]);                               // Get params vector
+        transMatrix = (transMatrix - gainVector * sampleVector.trans() * transMatrix) / lambda;                                  // Get transferred matrix
 
-      
         return paramsVector;
     }
 
@@ -69,7 +68,7 @@ class RLS
      */
     void setParamVector(const Matrixf<dim, 1> &updatedParams)
     {
-        paramsVector        = updatedParams;
+        paramsVector = updatedParams;
         defaultParamsVector = updatedParams;
     }
     /**
@@ -86,31 +85,31 @@ class RLS
      */
     const float &getOutput() const { return output; }
 
-   private:
+private:
     /**
      * @brief Lambda and delta validate check
      * @param None
      * @retval None
      */
-//    void validate() const
-//    {
-//        configASSERT(lambda >= 0.0f || lambda <= 1.0f);
-//        configASSERT(delta > 0);
-//    }
+    //    void validate() const
+    //    {
+    //        configASSERT(lambda >= 0.0f || lambda <= 1.0f);
+    //        configASSERT(delta > 0);
+    //    }
 
-    uint32_t dimension;  // Dimension of the RLS space
-    float lambda;        // The forget index
-    float delta;         // Intialized value of the transferred matrix
+    uint32_t dimension; // Dimension of the RLS space
+    float lambda;       // The forget index
+    float delta;        // Intialized value of the transferred matrix
 
-  //  TickType_t lastUpdate;  // Last update tick
-    uint32_t updateCnt;     // Total update Count
+    //  TickType_t lastUpdate;  // Last update tick
+    uint32_t updateCnt; // Total update Count
 
     /*RLS relvant matrix*/
-    Matrixf<dim, dim> transMatrix;  // Transfer matrix instance
-    Matrixf<dim, 1> gainVector;     // Gain vector for params update
-    Matrixf<dim, 1> paramsVector;   // Params vector
+    Matrixf<dim, dim> transMatrix; // Transfer matrix instance
+    Matrixf<dim, 1> gainVector;    // Gain vector for params update
+    Matrixf<dim, 1> paramsVector;  // Params vector
     Matrixf<dim, 1> defaultParamsVector;
-    float output;  // Estimated / filtered output
+    float output; // Estimated / filtered output
 };
 
 // }  // namespace Math

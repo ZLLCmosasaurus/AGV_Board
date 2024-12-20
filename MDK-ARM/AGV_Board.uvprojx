@@ -712,6 +712,11 @@
               <FileType>8</FileType>
               <FilePath>..\User\Congfig\config.cpp</FilePath>
             </File>
+            <File>
+              <FileName>config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\User\Congfig\config.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

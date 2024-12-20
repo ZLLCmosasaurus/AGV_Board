@@ -1,5 +1,11 @@
 #include "Steering_Wheel_Task.h"
 
+#ifdef DEBUG_DIR_SPEED
+float test_speed = 0.0;
+#endif // DEBUG
+
+
+
 // 应该要加互斥锁
 void State_Update(Class_Steering_Wheel *steering_wheel)
 {
@@ -65,8 +71,8 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     steering_wheel->Power_Management.Motor_Data[7].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
     steering_wheel->Power_Management.Motor_Data[7].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
 
-    memcpy(AGV_BOARD_CAN_DATA, &steering_wheel->Power_Management.Motor_Data[6].feedback_omega, 2)
-        memcpy(AGV_BOARD_CAN_DATA + 2, &steering_wheel->Power_Management.Motor_Data[6].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA, &steering_wheel->Power_Management.Motor_Data[6].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA + 2, &steering_wheel->Power_Management.Motor_Data[6].feedback_torque, 2);
 
     memcpy(AGV_BOARD_CAN_DATA + 4, &steering_wheel->Power_Management.Motor_Data[7].feedback_omega, 2);
     memcpy(AGV_BOARD_CAN_DATA + 6, &steering_wheel->Power_Management.Motor_Data[7].feedback_torque, 2);
@@ -103,9 +109,11 @@ invert_flag = 0（不反转）
    - 电机反转
    - 逆时针转动45°
 */
+  float temp_err = 0.0f;
+  float temp_target_angle=0.0f;
 void Control_Update(Class_Steering_Wheel *steering_wheel)
 {
-    float temp_err = 0.0f;
+  
 
     // 1. 角度优化
     if (steering_wheel->deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
@@ -113,7 +121,7 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
         float temp_min;
 
         // 计算误差，考虑当前电机状态
-        temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
+        temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle /*- steering_wheel->invert_flag * 180.0f*/;
 
         // 标准化到[0, 360)范围
         while (temp_err > 360.0f)
@@ -128,12 +136,12 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
             temp_min = 360.0f - fabs(temp_err);
 
         // 判断是否需要切换方向
-        if (temp_min > 90.0f)
-        {
-            steering_wheel->invert_flag = !steering_wheel->invert_flag;
-            // 重新计算误差
-            temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
-        }
+//        if (temp_min > 90.0f)
+//        {
+//            steering_wheel->invert_flag = !steering_wheel->invert_flag;
+//            // 重新计算误差
+//            temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
+//        }
     }
     else
     {
@@ -152,16 +160,21 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
             temp_err += 360.0f;
         }
     }
-    steering_wheel->Target_Angle = steering_wheel->Now_Angle + temp_err;
+    temp_target_angle = steering_wheel->Now_Angle + temp_err;
 
     // PID参数更新
-    steering_wheel->Motion_Motor.Set_Target_Omega_Radian(
-        (steering_wheel->invert_flag ? -1 : 1) * steering_wheel->Target_Velocity / Wheel_Diameter * 2);
-    steering_wheel->Motion_Motor.Set_Now_Omega_Radian(steering_wheel->Now_Velocity / Wheel_Diameter * 2); // Get_Now_Omega_Radian获得的是电机输出轴的角速度，这个角速度放在了data里，Set_Now_Omega_Radian设置的是电机类直属的Now_Omega_Radian
+    steering_wheel->Motion_Motor.Set_Target_Omega_Angle(
+      /*  (steering_wheel->invert_flag ? -1 : 1) **/ steering_wheel->Target_Velocity / Wheel_Diameter * 2*RAD_TO_DEG);
+    steering_wheel->Motion_Motor.Set_Now_Omega_Angle(steering_wheel->Now_Velocity / Wheel_Diameter * 2*RAD_TO_DEG); // Get_Now_Omega_Radian获得的是电机输出轴的角速度，这个角速度放在了data里，Set_Now_Omega_Radian设置的是电机类直属的Now_Omega_Radian
 
-    steering_wheel->Directive_Motor.Set_Target_Radian(steering_wheel->Target_Angle * DEG_TO_RAD);
-    steering_wheel->Directive_Motor.Set_Now_Radian(steering_wheel->Now_Angle * DEG_TO_RAD);       // 转向轮的当前数据不直接来自于电机
-    steering_wheel->Directive_Motor.Set_Now_Omega_Radian(steering_wheel->Now_Omega * DEG_TO_RAD); // 转向轮的当前数据不直接来自于电机
+    steering_wheel->Directive_Motor.Set_Target_Angle(temp_target_angle);
+    steering_wheel->Directive_Motor.Set_Now_Angle(steering_wheel->Now_Angle);       // 转向轮的当前数据不直接来自于电机
+    steering_wheel->Directive_Motor.Set_Now_Omega_Angle(steering_wheel->Now_Omega); // 转向轮的当前数据不直接来自于电机
+
+#ifdef DEBUG_DIR_SPEED
+    steering_wheel->Directive_Motor.Set_Target_Omega_Angle(test_speed);
+
+#endif // DEBUG
 
     // PID计算
     steering_wheel->Motion_Motor.TIM_PID_PeriodElapsedCallback();
@@ -178,8 +191,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[0].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[1].output);
+//    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[0].output);
+//    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[1].output);
 #endif
 
 #ifdef AGV_BOARD_B
@@ -190,8 +203,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[2].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[3].output);
+//    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[2].output);
+//    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[3].output);
 #endif
 
 #ifdef AGV_BOARD_C
@@ -202,8 +215,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[4].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[5].output);
+//    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[4].output);
+//    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[5].output);
 #endif
 
 #ifdef AGV_BOARD_D
@@ -214,8 +227,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[6].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[7].output);
+    // steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[6].output);
+    // steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[7].output);
 #endif
 
 #endif // POWER_CONTROL==1
@@ -224,13 +237,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 void Command_Send(Class_Steering_Wheel *steering_wheel)
 {
 
-<<<<<<< HEAD
     CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);        // 发送本轮组电机指令
      CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
-=======
-    CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8); // 发送本轮组电机指令
-    // CAN_Send_Data(&hcan2, AGV_BOARD_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
->>>>>>> 58a9a8d74b41e1e3141cfca483c862396139cfee
 
     steering_wheel->Encoder.Briter_Encoder_Request_Total_Angle();
     CAN_Send_Data(&hcan1, ENCODER_ID, ENCODER_CAN_DATA, 8); // 发送请求编码器数据

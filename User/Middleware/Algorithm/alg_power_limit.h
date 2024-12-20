@@ -92,11 +92,11 @@ public:
 
 protected:
     // 转矩系数 rad转rpm系数
-    float Toque_Coefficient = 1.99688994e-6f * (3591 / 187) / 13.93f; // (20/16384)*(0.3)*(187/3591)/9.55
+    float Toque_Coefficient = 1.99688994e-6f; // (20/16384)*(0.3)*(187/3591)/9.55
 
     // 电机模型参数
-    float k1 = 1.3;       // k1
-    float k2 = 0.015;     // k2
+    float k1 = 1.23e-07;  // k1
+    float k2 = 1.453e-07; // k2
     float k3 = 8.4 / 8.0; // k3 静态损耗/n
     float Alpha = 0.0f;
     float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient

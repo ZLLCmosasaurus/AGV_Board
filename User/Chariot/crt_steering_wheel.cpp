@@ -34,9 +34,10 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
 }
 
 // 这里要根据帧ID判断是功率数据还是速度数据
+float velocity_x, velocity_y, velocity, theta;
 void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
-    float velocity_x, velocity_y, velocity, theta;
+
 
     if (CAN_RxMessage->Header.StdId == AGV_BOARD_ID)
     {
@@ -53,6 +54,7 @@ void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMes
     if (CAN_RxMessage->Header.StdId == 0x01E)
     {
         memcpy(&Power_Management.Max_Power, CAN_RxMessage->Data, 2);
+	  memcpy(&Power_Management.Actual_Power,CAN_RxMessage->Data+2,4);
     }
 }
 
@@ -60,12 +62,17 @@ void Class_Steering_Wheel::Init()
 {
 
     // todo:待调参
-    Motion_Motor.PID_Omega.Init(0, 0, 0, 0, 0);
+    Motion_Motor.PID_Omega.Init(15, 0, 0, 0, 0,16384);
     Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA, 14);
 
-    Directive_Motor.PID_Angle.Init(0, 0, 0, 0, 0);
-    Directive_Motor.PID_Omega.Init(0, 0, 0, 0, 0);
+    Directive_Motor.PID_Angle.Init(15, 0, 0, 0, 0,16384);
+    Directive_Motor.PID_Omega.Init(35, 0, 0, 0, 0,16384);
+
+#ifdef DEBUG_DIR_SPEED
+    Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_OMEGA, 8);
+#else
     Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_ANGLE, 8);
+#endif // DEBUG
 
     Encoder.Init(&hcan1, static_cast<Enum_Encoder_ID>(ENCODER_ID));
 }
