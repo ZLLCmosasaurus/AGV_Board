@@ -236,10 +236,14 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 
 void Command_Send(Class_Steering_Wheel *steering_wheel)
 {
+    /*测试用*/
+    uint8_t sum_power = 0;
+    memcpy(&sum_power, &steering_wheel->Power_Management.Theoretical_Total_Power, sizeof(float));
+    CAN_Send_Data(&hcan2, 0x20E, &sum_power, 8);
 
-    CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);        // 发送本轮组电机指令
-     CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
-
+//
+    CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);              // 发送本轮组电机指令
+    CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
     steering_wheel->Encoder.Briter_Encoder_Request_Total_Angle();
     CAN_Send_Data(&hcan1, ENCODER_ID, ENCODER_CAN_DATA, 8); // 发送请求编码器数据
 }

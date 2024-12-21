@@ -75,4 +75,5 @@ void Class_Steering_Wheel::Init()
 #endif // DEBUG
 
     Encoder.Init(&hcan1, static_cast<Enum_Encoder_ID>(ENCODER_ID));
+    Power_Limit.Init();
 }

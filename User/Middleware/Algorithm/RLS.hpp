@@ -60,7 +60,7 @@ public:
 
         return paramsVector;
     }
-
+	
     /**
      * @brief Set the default regression parameters
      * @param updatedParams

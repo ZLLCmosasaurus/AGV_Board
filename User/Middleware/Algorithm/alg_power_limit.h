@@ -18,7 +18,7 @@
 #include "arm_math.h"
 #include "dvc_djimotor.h"
 #include "config.h"
-
+#include "RLS.hpp"
 /* Exported macros -----------------------------------------------------------*/
 #define REDUATION (3591.f / 187.f) // 标准减速比
 #define RAD_TO_RPM 9.5493f
@@ -84,6 +84,8 @@ public:
     float Calculate_Toque(float omega, float power, float torque); // 根据功率计算转矩
     void Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data);
     void Power_Task(Struct_Power_Management &power_management);
+
+	void Init();
     inline float Get_K1();
     inline float Get_K2();
 
@@ -95,11 +97,13 @@ protected:
     float Toque_Coefficient = 1.99688994e-6f; // (20/16384)*(0.3)*(187/3591)/9.55
 
     // 电机模型参数
-    float k1 = 1.23e-07;  // k1
-    float k2 = 1.453e-07; // k2
+    float k1 = 0.0123436227;  // k1
+    float k2 = 1.24923801; // k2
     float k3 = 8.4 / 8.0; // k3 静态损耗/n
     float Alpha = 0.0f;
     float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient
+
+    RLS<2> rls{1e-5f, 0.99999f};
 };
 float Class_Power_Limit::Get_K1()
 {

@@ -13,14 +13,14 @@
 
 #include "alg_power_limit.h"
 #include "math.h"
-#include "RLS.hpp"
+
 /* Private macros ------------------------------------------------------------*/
 
 /* Private types -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 Class_Power_Limit Power_Limit;
-RLS<2> rls(1e-5f, 0.99999f);
+
 /* Private function declarations ---------------------------------------------*/
 static inline bool floatEqual(float a, float b) { return fabs(a - b) < 1e-5f; }
 
@@ -29,6 +29,12 @@ static inline float rpm2av(float rpm) { return rpm * (float)PI / 30.0f; }
 static inline float av2rpm(float av) { return av * 30.0f / (float)PI; }
 static inline float my_fmax(float a, float b) { return (a > b) ? a : b; }
 /* Function prototypes -------------------------------------------------------*/
+void Class_Power_Limit::Init()
+{
+    float initParams[2] = {k1, k2};
+    rls.setParamVector(Matrixf<2, 1>(initParams));
+}
+
 /**
  * @brief 返回单个电机的计算功率
  *
@@ -38,6 +44,7 @@ static inline float my_fmax(float a, float b) { return (a > b) ? a : b; }
  */
 float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque)
 {
+
     float cmdPower;
 
     float sumError = 0.0f;
@@ -46,45 +53,54 @@ float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque)
     float k1 = Get_K1();
     float k2 = Get_K2();
 
-    cmdPower = omega / RAD_TO_RPM * torque + omega * omega * k1 + torque * torque * k2 +
+    cmdPower = rpm2av(omega) * torque + fabs(rpm2av(omega)) * k1 + torque * torque * k2 +
                k3;
     return cmdPower;
 }
 
 float effectivePower = 0;
+float test_total_power = 0;
+float k1_part = 0;
+float k2_part = 0;
 void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data)
 {
     // 功率计算和RLS更新
     static Matrixf<2, 1> samples;
     static Matrixf<2, 1> params;
     effectivePower = 0;
+    test_total_power = 0;
     // 清零samples
     samples[0][0] = 0;
     samples[1][0] = 0;
-
-    // 遍历所有电机（8个）
-    for (int i = 0; i < 8; i++)
+    if (actual_power > 5)
     {
-        if (actual_power > 5)
+        // 遍历所有电机（8个）
+        for (int i = 0; i < 8; i++)
         {
+
             // 计算有效功率
             effectivePower += motor_data[i].feedback_torque *
                               rpm2av(motor_data[i].feedback_omega);
 
             // 更新样本数据
-            samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega))*fabsf(rpm2av(motor_data[i].feedback_omega));
+            samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega));
             samples[1][0] += motor_data[i].feedback_torque *
                              motor_data[i].feedback_torque;
+            k1_part = k1 * samples[0][0];
+            k2_part = k2 * samples[1][0];
+            test_total_power += (effectivePower + k1 * samples[0][0] + k2 * samples[1][0] + k3);
         }
-    }
 
-    // RLS更新
-    params = rls.update(samples, actual_power - effectivePower - 8 * k3);
-k1=params[0][0];
-    k2=params[1][0];
-    // 参数限制
-    //        k1 = my_fmax(params[0][0], 1e-2f); // 防止k1为负
-    //        k2 = my_fmax(params[1][0], 1e-2f); // 防止k2为负
+        // RLS更新
+        params = rls.update(samples, actual_power - effectivePower - 8 * k3);
+        k1 = params[0][0];
+        k2 = params[1][0];
+        //	  k1=0;
+        //	  k2=0;
+        // 参数限制
+        //        k1 = my_fmax(params[0][0], 1e-2f); // 防止k1为负
+        //        k2 = my_fmax(params[1][0], 1e-2f); // 防止k2为负
+    }
 }
 /**
  * @brief 返回扭矩，单位为Nm，用返回值的时候要转化到控制量
