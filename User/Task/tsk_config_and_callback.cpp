@@ -90,13 +90,18 @@ void Agv_Board_CAN2_Callback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
     case (0x02B):
     case (0x02C):
     case (0x02D):
+    case (0x03A):
+    case (0x03B):
+    case (0x03C):
+    case (0x03D):
     {
         steering_wheel.CAN_RxAgvBoardCallback(CAN_RxMessage);
     }
     break;
     default:
-        break;
+         break;
     }
+
 }
 
 #endif

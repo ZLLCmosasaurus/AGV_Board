@@ -30,6 +30,30 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
         memcpy(&Power_Management.Motor_Data[7], CAN_RxMessage->Data + 4, 4);
     }
     break;
+     case 0x03A:
+    {
+        memcpy(&Power_Management.Motor_Data[0].torque, CAN_RxMessage->Data, 2);
+        memcpy(&Power_Management.Motor_Data[1].torque, CAN_RxMessage->Data + 2, 2);
+    }
+    break;
+    case 0x03B:
+    {
+        memcpy(&Power_Management.Motor_Data[2].torque, CAN_RxMessage->Data, 2);
+        memcpy(&Power_Management.Motor_Data[3].torque, CAN_RxMessage->Data + 2, 2);
+    }
+    break;
+    case 0x03C:
+    {
+        memcpy(&Power_Management.Motor_Data[4].torque, CAN_RxMessage->Data, 2);
+        memcpy(&Power_Management.Motor_Data[5].torque, CAN_RxMessage->Data + 2, 2);
+    }
+    break;
+    case 0x03D:
+    {
+        memcpy(&Power_Management.Motor_Data[6].torque, CAN_RxMessage->Data, 2);
+        memcpy(&Power_Management.Motor_Data[7].torque, CAN_RxMessage->Data + 2, 2);
+    }
+    break;
     }
 }
 

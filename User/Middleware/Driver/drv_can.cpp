@@ -79,6 +79,11 @@ uint8_t CAN2_0x02B_Tx_Data[8]; // 发送舵B轮轮组数据
 uint8_t CAN2_0x02C_Tx_Data[8]; // 发送舵C轮轮组数据
 uint8_t CAN2_0x02D_Tx_Data[8]; // 发送舵D轮轮组数据
 
+uint8_t CAN2_0x03A_Tx_Data[8]; // 发送舵A轮轮组数据
+uint8_t CAN2_0x03B_Tx_Data[8]; // 发送舵B轮轮组数据
+uint8_t CAN2_0x03C_Tx_Data[8]; // 发送舵C轮轮组数据
+uint8_t CAN2_0x03D_Tx_Data[8]; // 发送舵D轮轮组数据
+
 
 uint8_t CAN1_0x0A_Tx_Data[8]; 
 uint8_t CAN1_0x0B_Tx_Data[8]; 

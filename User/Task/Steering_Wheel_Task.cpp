@@ -28,11 +28,16 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     steering_wheel->Power_Management.Motor_Data[1].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
     steering_wheel->Power_Management.Motor_Data[1].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
 
-    memcpy(AGV_BOARD_CAN_DATA, &steering_wheel->Power_Management.Motor_Data[0].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 2, &steering_wheel->Power_Management.Motor_Data[0].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[0].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[0].feedback_torque, 2);
 
-    memcpy(AGV_BOARD_CAN_DATA + 4, &steering_wheel->Power_Management.Motor_Data[1].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 6, &steering_wheel->Power_Management.Motor_Data[1].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[1].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[1].feedback_torque, 2);
+
+    
+    
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
 #endif
 
 #ifdef AGV_BOARD_B
@@ -43,11 +48,16 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     steering_wheel->Power_Management.Motor_Data[3].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
     steering_wheel->Power_Management.Motor_Data[3].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
 
-    memcpy(AGV_BOARD_CAN_DATA, &steering_wheel->Power_Management.Motor_Data[2].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 2, &steering_wheel->Power_Management.Motor_Data[2].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[2].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[2].feedback_torque, 2);
 
-    memcpy(AGV_BOARD_CAN_DATA + 4, &steering_wheel->Power_Management.Motor_Data[3].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 6, &steering_wheel->Power_Management.Motor_Data[3].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[3].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[3].feedback_torque, 2);
+
+    
+    
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
 #endif
 
 #ifdef AGV_BOARD_C
@@ -57,11 +67,16 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     steering_wheel->Power_Management.Motor_Data[5].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
     steering_wheel->Power_Management.Motor_Data[5].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
 
-    memcpy(AGV_BOARD_CAN_DATA, &steering_wheel->Power_Management.Motor_Data[4].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 2, &steering_wheel->Power_Management.Motor_Data[4].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[4].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[4].feedback_torque, 2);
 
-    memcpy(AGV_BOARD_CAN_DATA + 4, &steering_wheel->Power_Management.Motor_Data[5].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 6, &steering_wheel->Power_Management.Motor_Data[5].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[5].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[5].feedback_torque, 2);
+
+    
+    
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
 #endif
 
 #ifdef AGV_BOARD_D
@@ -71,11 +86,15 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     steering_wheel->Power_Management.Motor_Data[7].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
     steering_wheel->Power_Management.Motor_Data[7].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
 
-    memcpy(AGV_BOARD_CAN_DATA, &steering_wheel->Power_Management.Motor_Data[6].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 2, &steering_wheel->Power_Management.Motor_Data[6].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[6].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[6].feedback_torque, 2);
 
-    memcpy(AGV_BOARD_CAN_DATA + 4, &steering_wheel->Power_Management.Motor_Data[7].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA + 6, &steering_wheel->Power_Management.Motor_Data[7].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[7].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[7].feedback_torque, 2);
+
+    
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
 #endif
 }
 
@@ -243,7 +262,8 @@ void Command_Send(Class_Steering_Wheel *steering_wheel)
 
 //
     CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);              // 发送本轮组电机指令
-    CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA, 8); // 发送本轮组电机的转速和扭矩
+    CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA_1, 8); // 发送本轮组电机的转速和扭矩
+    CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID, AGV_BOARD_CAN_DATA_2, 8); // 发送本轮组电机的pid out 的值
     steering_wheel->Encoder.Briter_Encoder_Request_Total_Angle();
     CAN_Send_Data(&hcan1, ENCODER_ID, ENCODER_CAN_DATA, 8); // 发送请求编码器数据
 }

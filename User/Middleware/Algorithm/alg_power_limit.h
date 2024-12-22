@@ -61,7 +61,7 @@ typedef struct
     __fp16 torque;           // pid输出的转子转矩,Nm
     float theoretical_power; // 理论功率
     float scaled_power;      // 功率（缩放后）
-
+    
     int16_t output;        // 最终输出扭矩电流控制值（16384）
 } Struct_Power_Motor_Data; //
 
@@ -72,7 +72,7 @@ typedef struct
     float Theoretical_Total_Power; // 理论总功率
     float Scaled_Total_Power;      // 缩放后总功率
     float Actual_Power;            // 实际总功率
-
+    
     Struct_Power_Motor_Data Motor_Data[8]; // 舵轮八个电机，分为四组，默认偶数索引值的电机为转向电机，奇数索引值的电机为动力电机
 
 } Struct_Power_Management; // 功率管理结构体
