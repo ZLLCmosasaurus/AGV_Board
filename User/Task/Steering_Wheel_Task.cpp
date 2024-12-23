@@ -36,8 +36,8 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
 
     
     
-    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[0].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[1].torque, 2);
 #endif
 
 #ifdef AGV_BOARD_B
@@ -56,8 +56,8 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
 
     
     
-    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[2].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[3].torque, 2);
 #endif
 
 #ifdef AGV_BOARD_C
@@ -75,8 +75,8 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
 
     
     
-    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[4].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[5].torque, 2);
 #endif
 
 #ifdef AGV_BOARD_D
@@ -93,8 +93,8 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[7].feedback_torque, 2);
 
     
-    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[8].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 , &steering_wheel->Power_Management.Motor_Data[6].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
 #endif
 }
 
@@ -246,20 +246,26 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    // steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[6].output);
-    // steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[7].output);
+//     steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[6].output);
+//     steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[7].output);
 #endif
 
 #endif // POWER_CONTROL==1
 }
-
+__fp16 k1,k2;
+uint8_t test_data[8];
 void Command_Send(Class_Steering_Wheel *steering_wheel)
 {
     /*测试用*/
-    uint8_t sum_power = 0;
-    memcpy(&sum_power, &steering_wheel->Power_Management.Theoretical_Total_Power, sizeof(float));
-    CAN_Send_Data(&hcan2, 0x20E, &sum_power, 8);
 
+	k1=(__fp16)steering_wheel->Power_Limit.Get_K1();
+	k2=(__fp16)steering_wheel->Power_Limit.Get_K2();
+    memcpy(test_data, &steering_wheel->Power_Management.Theoretical_Total_Power, sizeof(float));
+	    memcpy(test_data+4, &k1, sizeof(__fp16));
+		    memcpy(test_data+6, &k2, sizeof(__fp16));
+#ifdef AGV_BOARD_D
+    CAN_Send_Data(&hcan2, 0x20E, test_data, 8);
+#endif
 //
     CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);              // 发送本轮组电机指令
     CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID_1, AGV_BOARD_CAN_DATA_1, 8); // 发送本轮组电机的转速和扭矩

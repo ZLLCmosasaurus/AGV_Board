@@ -59,6 +59,7 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
 
 // 这里要根据帧ID判断是功率数据还是速度数据
 float velocity_x, velocity_y, velocity, theta;
+float last_angle=0;
 void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
 
@@ -73,6 +74,13 @@ void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMes
 
         this->Target_Velocity = velocity;
         this->Target_Angle = theta * RAD_TO_DEG;
+	    
+	    if(this->Target_Velocity==0)
+	    {
+		    this->Target_Angle=last_angle;
+	    }
+	    
+	    last_angle=this->Target_Angle;
     }
 
     if (CAN_RxMessage->Header.StdId == 0x01E)

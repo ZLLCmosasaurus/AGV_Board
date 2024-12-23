@@ -61,7 +61,7 @@ typedef struct
     __fp16 torque;           // pid输出的转子转矩,Nm
     float theoretical_power; // 理论功率
     float scaled_power;      // 功率（缩放后）
-    
+
     int16_t output;        // 最终输出扭矩电流控制值（16384）
 } Struct_Power_Motor_Data; //
 
@@ -72,7 +72,7 @@ typedef struct
     float Theoretical_Total_Power; // 理论总功率
     float Scaled_Total_Power;      // 缩放后总功率
     float Actual_Power;            // 实际总功率
-    
+
     Struct_Power_Motor_Data Motor_Data[8]; // 舵轮八个电机，分为四组，默认偶数索引值的电机为转向电机，奇数索引值的电机为动力电机
 
 } Struct_Power_Management; // 功率管理结构体
@@ -85,7 +85,7 @@ public:
     void Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data);
     void Power_Task(Struct_Power_Management &power_management);
 
-	void Init();
+    void Init();
     inline float Get_K1();
     inline float Get_K2();
 
@@ -97,13 +97,13 @@ protected:
     float Toque_Coefficient = 1.99688994e-6f; // (20/16384)*(0.3)*(187/3591)/9.55
 
     // 电机模型参数
-    float k1 = 0.0123436227;  // k1
-    float k2 = 1.24923801; // k2
-    float k3 = 8.4 / 8.0; // k3 静态损耗/n
+    float k1 = 0.024246;  // k1
+    float k2 = 1.183594;  // k2
+    float k3 = 9.28 / 8.0; // k3 静态损耗/n
     float Alpha = 0.0f;
     float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient
 
-    RLS<2> rls{1e-5f, 0.99999f};
+    RLS<2> rls{1e-5f, 0.999f};
 };
 float Class_Power_Limit::Get_K1()
 {

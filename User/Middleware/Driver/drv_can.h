@@ -140,6 +140,11 @@ extern "C"
     extern uint8_t CAN2_0x02B_Tx_Data[8];
     extern uint8_t CAN2_0x02C_Tx_Data[8];
     extern uint8_t CAN2_0x02D_Tx_Data[8];
+    
+    extern uint8_t CAN2_0x03A_Tx_Data[8];
+    extern uint8_t CAN2_0x03B_Tx_Data[8];
+    extern uint8_t CAN2_0x03C_Tx_Data[8];
+    extern uint8_t CAN2_0x03D_Tx_Data[8];
 
 
     extern uint8_t CAN1_0x0A_Tx_Data[8];

@@ -79,9 +79,16 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
         {
 
             // 计算有效功率
-            effectivePower += motor_data[i].feedback_torque *
-                              rpm2av(motor_data[i].feedback_omega);
-
+            if (motor_data[i].feedback_torque *
+                    rpm2av(motor_data[i].feedback_omega) <=0)
+            {
+                effectivePower += 0;
+            }
+            else
+            {
+                effectivePower += motor_data[i].feedback_torque *
+                                  rpm2av(motor_data[i].feedback_omega);
+            }
             // 更新样本数据
             samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega));
             samples[1][0] += motor_data[i].feedback_torque *
@@ -110,10 +117,11 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
  * @param torque pid输出的扭矩，单位为Nm
  * @return float
  */
+float newTorqueCurrent = 0.0f;
 float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque)
 {
 
-    float newTorqueCurrent = 0.0f;
+    newTorqueCurrent = 0.0f;
     float delta = omega * omega - 4 * (k1 * fabs(omega) + k3 - power) * k2;
     if (floatEqual(delta, 0.0f)) // repeat roots
     {
@@ -121,8 +129,17 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque)
     }
     else if (delta > 0.0f) // distinct roots
     {
-        newTorqueCurrent = torque > 0.0f ? (omega + sqrtf(delta)) / (2.0f * k2)
-                                         : (omega - sqrtf(delta)) / (2.0f * k2);
+        float solution1 = (omega + sqrtf(delta)) / (2.0f * k2);
+        float solution2 = (omega - sqrtf(delta)) / (2.0f * k2);
+
+        if (torque > 0.0f)
+        {
+            newTorqueCurrent = (solution1 > 0.0f) ? solution1 : solution2;
+        }
+        else
+        {
+            newTorqueCurrent = (solution1 < 0.0f) ? solution1 : solution2;
+        }
     }
     else // imaginary roots
     {
@@ -138,6 +155,7 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque)
  *
  * @param power_management
  */
+float test_torque = 0;
 void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
 {
     float theoretical_sum = 0;
@@ -146,7 +164,8 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
     for (uint8_t i = 0; i < 8; i++)
     {
         power_management.Motor_Data[i].theoretical_power = Calculate_Theoretical_Power(power_management.Motor_Data[i].feedback_omega, power_management.Motor_Data[i].torque);
-
+        if (power_management.Motor_Data[i].theoretical_power <= 0)
+            continue;
         theoretical_sum += power_management.Motor_Data[i].theoretical_power;
     }
     power_management.Theoretical_Total_Power = theoretical_sum;
@@ -173,7 +192,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
     {
         power_management.Motor_Data[i].output = Calculate_Toque(power_management.Motor_Data[i].feedback_omega, power_management.Motor_Data[i].scaled_power, power_management.Motor_Data[i].torque) * TORQUE_TO_CMD_CURRENT;
     }
-
+    test_torque = Calculate_Toque(power_management.Motor_Data[5].feedback_omega, power_management.Motor_Data[5].scaled_power, power_management.Motor_Data[5].torque);
     Calculate_Power_Coefficient(power_management.Actual_Power, power_management.Motor_Data);
 }
 
