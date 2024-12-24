@@ -210,8 +210,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-//    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[0].output);
-//    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[1].output);
+    //steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[0].output);
+    //steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[1].output);
 #endif
 
 #ifdef AGV_BOARD_B

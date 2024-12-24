@@ -103,7 +103,7 @@ protected:
     float Alpha = 0.0f;
     float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient
 
-    RLS<2> rls{1e-5f, 0.999f};
+    RLS<2> rls{1e-5f, 0.99999f};
 };
 float Class_Power_Limit::Get_K1()
 {
