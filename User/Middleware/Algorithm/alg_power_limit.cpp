@@ -129,8 +129,8 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque)
 	else{
     if (floatEqual(delta, 0.0f)) // repeat roots
     {
-        //newTorqueCurrent = omega / (2.0f * k2);
-			 newTorqueCurrent = 0;
+        newTorqueCurrent = -omega / (2.0f * k2);
+			// newTorqueCurrent = 0;
     }
     else if (delta > 0.0f) // distinct roots
     {
@@ -148,8 +148,8 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque)
     }
     else // imaginary roots
     {
-        //newTorqueCurrent = omega / (2.0f * k2);
-			 newTorqueCurrent = 0;
+        newTorqueCurrent = -omega / (2.0f * k2);
+		//	 newTorqueCurrent = 0;
     }
     // newTorqueCurrent = Utils::Math::clamp(newTorqueCurrent, p->pidMaxOutput);
 	}
