@@ -205,7 +205,6 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
            newTorqueCurrent = omega / (2.0f * k2_use);
         }
     }
-
     return newTorqueCurrent;
 }
 
