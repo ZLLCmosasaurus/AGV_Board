@@ -15,11 +15,14 @@
 /* Includes ------------------------------------------------------------------*/
 
 /* Exported macros -----------------------------------------------------------*/
+#define AGV//舵轮底盘
+
+
 // 舵小板选择
-//#define AGV_BOARD_A //不同舵轮对应宏定义
+#define AGV_BOARD_A //不同舵轮对应宏定义
 //#define AGV_BOARD_B
 //#define AGV_BOARD_C
-#define AGV_BOARD_D
+//#define AGV_BOARD_D
 
 #define A_ENCODER_ID 0x0AU
 #define B_ENCODER_ID 0x0BU

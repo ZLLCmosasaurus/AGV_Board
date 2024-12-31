@@ -1,11 +1,11 @@
 /**
  * @file alg_power_limit.h
- * @author lez
- * @brief 功率限制算法
- * @version 1.1
- * @date 2024-07-1 0.1 24赛季定稿
+ * @author jh,qyx
+ * @brief 自适应功率限制算法
+ * @version 1.2
+ * @date 
  *
- * @copyright ZLLC 2024
+ * @copyright ZLLC 2025
  *
  */
 
@@ -13,12 +13,12 @@
 #define ALG_POWER_LIMIT_H
 
 /* Includes ------------------------------------------------------------------*/
-
 #include "main.h"
 #include "arm_math.h"
 #include "dvc_djimotor.h"
 #include "config.h"
 #include "RLS.hpp"
+
 /* Exported macros -----------------------------------------------------------*/
 #define REDUATION (3591.f / 187.f) // 标准减速比
 #define RAD_TO_RPM 9.5493f
@@ -28,30 +28,6 @@
 #define CMD_CURRENT_TO_TORQUE (CMD_CURRENT_TO_TORQUE_CURRENT * Kt)
 #define TORQUE_TO_CMD_CURRENT 1 / (CMD_CURRENT_TO_TORQUE_CURRENT * Kt)
 #define PI 3.14159265354f
-// typedef struct
-// {
-//     float theoretical; // 理论功率
-//     float scaled;      // 功率（缩放后）
-// } Motor_Power_t;
-
-// typedef struct
-// {
-//     Motor_Power_t motion;    // 动力电机功率
-//     Motor_Power_t directive; // 转向电机功率
-// } Steering_Wheel_Power_t;    // 舵轮功率结构体
-
-// // RLS参数更新需要所有电机的数据
-// typedef struct
-// {
-//     float omega;  // 转子转速,rpm
-//     float torque; // 转子转矩,Nm
-// } Motor_Data_t;
-
-// typedef struct
-// {
-//     Motor_Data_t motion;
-//     Motor_Data_t directive;
-// } Steering_Wheel_Motor_Data_t;
 
 typedef struct
 {
@@ -62,8 +38,9 @@ typedef struct
     float theoretical_power; // 理论功率
     float scaled_power;      // 功率（缩放后）
 
+    int16_t pid_output;     // pid输出的扭矩电流控制值（16384）
     int16_t output;        // 最终输出扭矩电流控制值（16384）
-} Struct_Power_Motor_Data; //
+} Struct_Power_Motor_Data;
 
 typedef struct
 {
@@ -75,58 +52,63 @@ typedef struct
 
     Struct_Power_Motor_Data Motor_Data[8]; // 舵轮八个电机，分为四组，默认偶数索引值的电机为转向电机，奇数索引值的电机为动力电机
 
-} Struct_Power_Management; // 功率管理结构体
+} Struct_Power_Management;
 
 class Class_Power_Limit
 {
 public:
-    float Calculate_Theoretical_Power(float omega, float torque);  // 计算单个电机的理论功率
-    float Calculate_Toque(float omega, float power, float torque); // 根据功率计算转矩
+    float Calculate_Theoretical_Power(float omega, float torque, uint8_t motor_index);
+    float Calculate_Toque(float omega, float power, float torque, uint8_t motor_index);
     void Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data);
     void Power_Task(Struct_Power_Management &power_management);
-
     void Init();
-    inline float Get_K1();
-    inline float Get_K2();
 
-    inline void Set_K1(float _k1);
-    inline void Set_K2(float _k2);
+#ifdef AGV
+    // AGV模式下的getter/setter
+    inline float Get_K1_Mot() const { return k1_mot; }
+    inline float Get_K2_Mot() const { return k2_mot; }
+    inline float Get_K1_Dir() const { return k1_dir; }
+    inline float Get_K2_Dir() const { return k2_dir; }
+    inline float Get_K3_Mot() const { return k3_mot; }
+    inline float Get_K3_Dir() const { return k3_dir; }
 
-protected:
-    // 转矩系数 rad转rpm系数
-    float Toque_Coefficient = 1.99688994e-6f; // (20/16384)*(0.3)*(187/3591)/9.55
+    inline void Set_K1_Mot(float _k1) { k1_mot = _k1; }
+    inline void Set_K2_Mot(float _k2) { k2_mot = _k2; }
+    inline void Set_K1_Dir(float _k1) { k1_dir = _k1; }
+    inline void Set_K2_Dir(float _k2) { k2_dir = _k2; }
+    inline void Set_K3_Mot(float _k3) { k3_mot = _k3; }
+    inline void Set_K3_Dir(float _k3) { k3_dir = _k3; }
+#else
+    // 普通模式下的getter/setter
+    inline float Get_K1() const { return k1; }
+    inline float Get_K2() const { return k2; }
+    inline float Get_K3() const { return k3; }
 
-    // 电机模型参数
-    float k1 = 0.024246;  // k1
-    float k2 = 1.183594;  // k2
-    float k3 = 9.28 / 8.0; // k3 静态损耗/n
-    float Alpha = 0.0f;
-    float Tansfer_Coefficient = 9.55f; // 转化系数 w*t/Tansfer_Coefficient
-
-    RLS<2> rls{1e-5f, 0.99999f};
-};
-float Class_Power_Limit::Get_K1()
-{
-    return k1;
-}
-
-float Class_Power_Limit::Get_K2()
-{
-    return k2;
-}
-
-void Class_Power_Limit::Set_K1(float _k1)
-{
-    k1 = _k1;
-}
-
-void Class_Power_Limit::Set_K2(float _k2)
-{
-    k2 = _k2;
-}
-
-/* Exported types ------------------------------------------------------------*/
-
+    inline void Set_K1(float _k1) { k1 = _k1; }
+    inline void Set_K2(float _k2) { k2 = _k2; }
+    inline void Set_K3(float _k3) { k3 = _k3; }
 #endif
 
-/************************ COPYRIGHT(C) USTC-ROBOWALKER **************************/
+protected:
+#ifdef AGV
+    // AGV模式参数
+    float k1_mot = 0.024246;   // 动力电机k1
+    float k2_mot = 1.183594;   // 动力电机k2
+    float k3_mot = 9.28f/8.0f; // 动力电机k3
+    
+    float k1_dir = 0.024246;   // 转向电机k1
+    float k2_dir = 1.183594;   // 转向电机k2
+    float k3_dir = 9.28f/8.0f; // 转向电机k3
+    
+    RLS<2> rls_mot{1e-5f, 0.9999f}; // 动力电机RLS
+    RLS<2> rls_dir{1e-5f, 0.9999f}; // 转向电机RLS
+#else
+    // 普通模式参数
+    float k1 = 0.024246;
+    float k2 = 1.183594;
+    float k3 = 9.28f/8.0f;
+    RLS<2> rls{1e-5f, 0.9999f};
+#endif
+};
+
+#endif

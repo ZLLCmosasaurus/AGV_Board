@@ -30,7 +30,7 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
         memcpy(&Power_Management.Motor_Data[7], CAN_RxMessage->Data + 4, 4);
     }
     break;
-     case 0x03A:
+    case 0x03A:
     {
         memcpy(&Power_Management.Motor_Data[0].torque, CAN_RxMessage->Data, 2);
         memcpy(&Power_Management.Motor_Data[1].torque, CAN_RxMessage->Data + 2, 2);
@@ -59,10 +59,9 @@ void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMe
 
 // 这里要根据帧ID判断是功率数据还是速度数据
 float velocity_x, velocity_y, velocity, theta;
-float last_angle=0;
+float last_angle = 0;
 void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
-
 
     if (CAN_RxMessage->Header.StdId == AGV_BOARD_ID)
     {
@@ -74,19 +73,19 @@ void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMes
 
         this->Target_Velocity = velocity;
         this->Target_Angle = theta * RAD_TO_DEG;
-	    
-	    if(this->Target_Velocity==0)
-	    {
-		    this->Target_Angle=last_angle;
-	    }
-	    
-	    last_angle=this->Target_Angle;
+
+        if (this->Target_Velocity == 0)
+        {
+            this->Target_Angle = last_angle;
+        }
+
+        last_angle = this->Target_Angle;
     }
 
     if (CAN_RxMessage->Header.StdId == 0x01E)
     {
         memcpy(&Power_Management.Max_Power, CAN_RxMessage->Data, 2);
-	  memcpy(&Power_Management.Actual_Power,CAN_RxMessage->Data+2,4);
+        memcpy(&Power_Management.Actual_Power, CAN_RxMessage->Data + 2, 4);
     }
 }
 
@@ -94,11 +93,11 @@ void Class_Steering_Wheel::Init()
 {
 
     // todo:待调参
-    Motion_Motor.PID_Omega.Init(15, 0, 0, 0, 0,16384);
+    Motion_Motor.PID_Omega.Init(7.5, 0, 0, 0, 0, 16384);
     Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA, 14);
 
-    Directive_Motor.PID_Angle.Init(15, 0, 0, 0, 0,16384);
-    Directive_Motor.PID_Omega.Init(35, 0, 0, 0, 0,16384);
+    Directive_Motor.PID_Angle.Init(4.5, 0, 0, 0, 0, 16384);
+    Directive_Motor.PID_Omega.Init(25, 0, 0, 0, 0, 16384);
 
 #ifdef DEBUG_DIR_SPEED
     Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_OMEGA, 8);
