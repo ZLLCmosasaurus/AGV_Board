@@ -294,7 +294,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
                             power_management.Motor_Data[i].scaled_power,
                             power_management.Motor_Data[i].torque,
                             i) *
-            TORQUE_TO_CMD_CURRENT;
+            GET_TORQUE_TO_CMD_CURRENT(i);
 
         // 限幅处理
         power_management.Motor_Data[i].output =

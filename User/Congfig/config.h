@@ -53,7 +53,7 @@
 #define Wheel_Diameter 0.12000000f // 轮子直径，单位为m
 #endif 
 
-/* 常规宏定义，无需修改 --------------------*/-
+/* 常规宏定义，无需修改 --------------------*/
 #define A_ENCODER_ID 0x0AU
 #define B_ENCODER_ID 0x0BU
 #define C_ENCODER_ID 0x0CU
