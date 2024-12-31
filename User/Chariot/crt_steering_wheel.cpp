@@ -3,7 +3,6 @@ Class_Steering_Wheel steering_wheel;
 void Class_Steering_Wheel::CAN_RxAgvBoardCallback(Struct_CAN_Rx_Buffer *CAN_RxMessage)
 {
 
-    //
     switch (CAN_RxMessage->Header.StdId)
     {
     case 0x02A:
@@ -94,7 +93,7 @@ void Class_Steering_Wheel::Init()
 
     // todo:待调参
     Motion_Motor.PID_Omega.Init(7.5, 0, 0, 0, 0, 16384);
-    Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA, 14);
+    Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA, MOT_OUTPUT_TO_ROTOR_RATIO);
 
     Directive_Motor.PID_Angle.Init(4.5, 0, 0, 0, 0, 16384);
     Directive_Motor.PID_Omega.Init(25, 0, 0, 0, 0, 16384);
@@ -102,8 +101,8 @@ void Class_Steering_Wheel::Init()
 #ifdef DEBUG_DIR_SPEED
     Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_OMEGA, 8);
 #else
-    Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_ANGLE, 8);
-#endif // DEBUG
+    Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_ANGLE, DIR_OUTPUT_TO_ROTOR_RATIO);
+#endif 
 
     Encoder.Init(&hcan1, static_cast<Enum_Encoder_ID>(ENCODER_ID));
     Power_Limit.Init();

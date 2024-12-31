@@ -163,9 +163,9 @@ protected:
 
     Struct_Briter_Encoder_Can_Data Command;
 
-        // 内部函数
-        void
-        Data_Process();
+    // 内部函数
+    void
+    Data_Process();
 };
 
 float Class_Briter_Encoder::Get_Now_Omega()

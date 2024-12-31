@@ -19,74 +19,41 @@ void State_Update(Class_Steering_Wheel *steering_wheel)
     steering_wheel->Now_Velocity = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * Wheel_Diameter / 2; // 这里有点怪异，因为Get_Now_Omega_Radian和Set_Target_Omega_Radian返回的数据不一样
 
 // 更新功率控制所需的数据
-#ifdef AGV_BOARD_A
-    steering_wheel->Power_Management.Motor_Data[0].feedback_omega = steering_wheel->Directive_Motor.Get_Now_Omega_Radian() * steering_wheel->Directive_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[0].feedback_torque = steering_wheel->Directive_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
+#if defined(AGV_BOARD_A) || defined(AGV_BOARD_B) || defined(AGV_BOARD_C) || defined(AGV_BOARD_D)
+    // 转向电机数据
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].feedback_omega = 
+        steering_wheel->Directive_Motor.Get_Now_Omega_Radian() * 
+        steering_wheel->Directive_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].feedback_torque = 
+        steering_wheel->Directive_Motor.Get_Now_Torque() * 
+        GET_CMD_CURRENT_TO_TORQUE(MOTOR_BASE_INDEX);
 
-    steering_wheel->Power_Management.Motor_Data[1].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[1].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
+    // 动力电机数据
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].feedback_omega = 
+        steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * 
+        steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].feedback_torque = 
+        steering_wheel->Motion_Motor.Get_Now_Torque() * 
+        GET_CMD_CURRENT_TO_TORQUE(MOTOR_BASE_INDEX + 1);
 
-    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[0].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[0].feedback_torque, 2);
+    // CAN数据打包
+    // 反馈数据
+    memcpy(AGV_BOARD_CAN_DATA_1, 
+           &steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 2, 
+           &steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].feedback_torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 4, 
+           &steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].feedback_omega, 2);
+    memcpy(AGV_BOARD_CAN_DATA_1 + 6, 
+           &steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].feedback_torque, 2);
 
-    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[1].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[1].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_2, &steering_wheel->Power_Management.Motor_Data[0].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[1].torque, 2);
+    // 控制数据
+    memcpy(AGV_BOARD_CAN_DATA_2, 
+           &steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].torque, 2);
+    memcpy(AGV_BOARD_CAN_DATA_2 + 2, 
+           &steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].torque, 2);
 #endif
 
-#ifdef AGV_BOARD_B
-    steering_wheel->Power_Management.Motor_Data[2]
-        .feedback_omega = steering_wheel->Directive_Motor.Get_Now_Omega_Radian() * steering_wheel->Directive_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[2].feedback_torque = steering_wheel->Directive_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
-
-    steering_wheel->Power_Management.Motor_Data[3].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[3].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
-
-    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[2].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[2].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[3].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[3].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_2, &steering_wheel->Power_Management.Motor_Data[2].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[3].torque, 2);
-#endif
-
-#ifdef AGV_BOARD_C
-    steering_wheel->Power_Management.Motor_Data[4].feedback_omega = steering_wheel->Directive_Motor.Get_Now_Omega_Radian() * steering_wheel->Directive_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[4].feedback_torque = steering_wheel->Directive_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
-
-    steering_wheel->Power_Management.Motor_Data[5].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[5].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
-
-    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[4].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[4].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[5].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[5].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_2, &steering_wheel->Power_Management.Motor_Data[4].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[5].torque, 2);
-#endif
-
-#ifdef AGV_BOARD_D
-    steering_wheel->Power_Management.Motor_Data[6].feedback_omega = steering_wheel->Directive_Motor.Get_Now_Omega_Radian() * steering_wheel->Directive_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[6].feedback_torque = steering_wheel->Directive_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
-
-    steering_wheel->Power_Management.Motor_Data[7].feedback_omega = steering_wheel->Motion_Motor.Get_Now_Omega_Radian() * steering_wheel->Motion_Motor.Get_Gearbox_Rate() * RAD_TO_RPM;
-    steering_wheel->Power_Management.Motor_Data[7].feedback_torque = steering_wheel->Motion_Motor.Get_Now_Torque() * CMD_CURRENT_TO_TORQUE;
-
-    memcpy(AGV_BOARD_CAN_DATA_1, &steering_wheel->Power_Management.Motor_Data[6].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 2, &steering_wheel->Power_Management.Motor_Data[6].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_1 + 4, &steering_wheel->Power_Management.Motor_Data[7].feedback_omega, 2);
-    memcpy(AGV_BOARD_CAN_DATA_1 + 6, &steering_wheel->Power_Management.Motor_Data[7].feedback_torque, 2);
-
-    memcpy(AGV_BOARD_CAN_DATA_2, &steering_wheel->Power_Management.Motor_Data[6].torque, 2);
-    memcpy(AGV_BOARD_CAN_DATA_2 + 2, &steering_wheel->Power_Management.Motor_Data[7].torque, 2);
-#endif
 }
 
 void Command_Update(Class_Steering_Wheel *steering_wheel)
@@ -125,15 +92,14 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 {
     // 由于can中断会修改Power_Management的内容，所以这里进出临界区以保护数据
     portENTER_CRITICAL();
-	
-	
+
     // 1. 角度优化
     if (steering_wheel->deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
     {
         float temp_min;
 
         // 计算误差，考虑当前电机状态
-        temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle /*- steering_wheel->invert_flag * 180.0f*/;
+        temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
 
         // 标准化到[0, 360)范围
         while (temp_err > 360.0f)
@@ -148,12 +114,12 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
             temp_min = 360.0f - fabs(temp_err);
 
         // 判断是否需要切换方向
-        //        if (temp_min > 90.0f)
-        //        {
-        //            steering_wheel->invert_flag = !steering_wheel->invert_flag;
-        //            // 重新计算误差
-        //            temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
-        //        }
+        if (temp_min > 90.0f)
+        {
+            steering_wheel->invert_flag = !steering_wheel->invert_flag;
+            // 重新计算误差
+            temp_err = steering_wheel->Target_Angle - steering_wheel->Now_Angle - steering_wheel->invert_flag * 180.0f;
+        }
     }
     else
     {
@@ -176,7 +142,7 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 
     // PID参数更新
     steering_wheel->Motion_Motor.Set_Target_Omega_Angle(
-        /*  (steering_wheel->invert_flag ? -1 : 1) **/ steering_wheel->Target_Velocity / Wheel_Diameter * 2 * RAD_TO_DEG);
+        (steering_wheel->invert_flag ? -1 : 1) * steering_wheel->Target_Velocity / Wheel_Diameter * 2 * RAD_TO_DEG);
     steering_wheel->Motion_Motor.Set_Now_Omega_Angle(steering_wheel->Now_Velocity / Wheel_Diameter * 2 * RAD_TO_DEG); // Get_Now_Omega_Radian获得的是电机输出轴的角速度，这个角速度放在了data里，Set_Now_Omega_Radian设置的是电机类直属的Now_Omega_Radian
 
     steering_wheel->Directive_Motor.Set_Target_Angle(temp_target_angle);
@@ -186,7 +152,7 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 #ifdef DEBUG_DIR_SPEED
     steering_wheel->Directive_Motor.Set_Target_Omega_Angle(test_speed);
 
-#endif // DEBUG
+#endif 
 
     // PID计算
     steering_wheel->Motion_Motor.TIM_PID_PeriodElapsedCallback();
@@ -194,87 +160,47 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
 
 #if POWER_CONTROL == 1
 
-#ifdef AGV_BOARD_A
+#if defined(AGV_BOARD_A) || defined(AGV_BOARD_B) || defined(AGV_BOARD_C) || defined(AGV_BOARD_D)
+    // 获取PID输出
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].pid_output =
+        steering_wheel->Directive_Motor.Get_Out();
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].pid_output =
+        steering_wheel->Motion_Motor.Get_Out();
 
-       steering_wheel->Power_Management.Motor_Data[0].pid_output= steering_wheel->Directive_Motor.Get_Out();
-    steering_wheel->Power_Management.Motor_Data[1].pid_output= steering_wheel->Motion_Motor.Get_Out();
     // 更新pid输出扭矩
-    steering_wheel->Power_Management.Motor_Data[0].torque = steering_wheel->Directive_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-    steering_wheel->Power_Management.Motor_Data[1].torque = steering_wheel->Motion_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].torque =
+        steering_wheel->Directive_Motor.Get_Out() * GET_CMD_CURRENT_TO_TORQUE(MOTOR_BASE_INDEX);
+    steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].torque =
+        steering_wheel->Motion_Motor.Get_Out() * GET_CMD_CURRENT_TO_TORQUE(MOTOR_BASE_INDEX + 1);
 
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[0].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[1].output);
+    // 设置输出
+    steering_wheel->Directive_Motor.Set_Out(
+        steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].output);
+    steering_wheel->Motion_Motor.Set_Out(
+        steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].output);
 #endif
 
-#ifdef AGV_BOARD_B
-    steering_wheel->Power_Management.Motor_Data[2].pid_output = steering_wheel->Directive_Motor.Get_Out();
-    steering_wheel->Power_Management.Motor_Data[3].pid_output = steering_wheel->Motion_Motor.Get_Out();
-
-    steering_wheel->Power_Management.Motor_Data[2].torque = steering_wheel->Directive_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-    steering_wheel->Power_Management.Motor_Data[3].torque = steering_wheel->Motion_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-
-    // 运行功率限制任务
-    steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
-
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[2].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[3].output);
-#endif
-
-#ifdef AGV_BOARD_C
-
-    steering_wheel->Power_Management.Motor_Data[4].pid_output = steering_wheel->Directive_Motor.Get_Out();
-    steering_wheel->Power_Management.Motor_Data[5].pid_output = steering_wheel->Motion_Motor.Get_Out();
-
-    steering_wheel->Power_Management.Motor_Data[4]
-        .torque = steering_wheel->Directive_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-    steering_wheel->Power_Management.Motor_Data[5].torque = steering_wheel->Motion_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-
-
-    // 运行功率限制任务
-    steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
-
-    steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[4].output);
-    steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[5].output);
-#endif
-
-#ifdef AGV_BOARD_D
-
-    steering_wheel->Power_Management.Motor_Data[6].pid_output= steering_wheel->Directive_Motor.Get_Out();
-    steering_wheel->Power_Management.Motor_Data[7].pid_output= steering_wheel->Motion_Motor.Get_Out();
-
-    steering_wheel->Power_Management.Motor_Data[6].torque = steering_wheel->Directive_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-    steering_wheel->Power_Management.Motor_Data[7].torque = steering_wheel->Motion_Motor.Get_Out() * CMD_CURRENT_TO_TORQUE;
-
-
-    // 运行功率限制任务
-    steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
-
-     steering_wheel->Directive_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[6].output);
-     steering_wheel->Motion_Motor.Set_Out(steering_wheel->Power_Management.Motor_Data[7].output);
-
-#endif
     portEXIT_CRITICAL();
 
-#endif // POWER_CONTROL==1
+#endif 
 }
 __fp16 k1, k2;
 uint8_t test_data[8];
 void Command_Send(Class_Steering_Wheel *steering_wheel)
 {
     /*测试用*/
-
-//    k1 = (__fp16)steering_wheel->Power_Limit.Get_K1();
-//    k2 = (__fp16)steering_wheel->Power_Limit.Get_K2();
+    k1 = (__fp16)steering_wheel->Power_Limit.Get_K2_Dir();
+    k2 = (__fp16)steering_wheel->Power_Limit.Get_K2_Mot();
     memcpy(test_data, &steering_wheel->Power_Management.Theoretical_Total_Power, sizeof(float));
     memcpy(test_data + 4, &k1, sizeof(__fp16));
     memcpy(test_data + 6, &k2, sizeof(__fp16));
 #ifdef AGV_BOARD_D
     CAN_Send_Data(&hcan2, 0x20E, test_data, 8);
 #endif
-    //
+
     CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);                  // 发送本轮组电机指令
     CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID_1, AGV_BOARD_CAN_DATA_1, 8); // 发送本轮组电机的转速和扭矩
     CAN_Send_Data(&hcan2, BOARD_TO_BOARDS_ID_2, AGV_BOARD_CAN_DATA_2, 8); // 发送本轮组电机的pid out 的值

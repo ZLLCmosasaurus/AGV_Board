@@ -244,72 +244,7 @@ uint8_t CAN_Send_Data(CAN_HandleTypeDef *hcan, uint16_t ID, uint8_t *Data, uint1
     return 1;
 }
 
-/**
- * @brief CAN的TIM定时器中断发送回调函数
- *
- */
-void TIM_CAN_PeriodElapsedCallback()
-{
-#ifdef CHASSIS
-    static uint8_t mod5 = 0;
-    static uint8_t mod10 = 0;
 
-
-
-    mod5++;
-    mod10++;
-    if (mod10 == 10)
-    {
-        mod10 = 0;
-        // CAN2超级电容
-        CAN_Send_Data(&hcan2, 0x66, CAN_Supercap_Tx_Data, 8);
-    }
-#ifdef omni_wheel
-    // CAN1总线  四个底盘电机
-    CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8);
-#endif
-#ifdef steering_wheel
-
-    if (mod5 == 5)
-    {
-        CAN_Send_Data(&hcan1, 0x01e, CAN1_0x01E_Tx_Data, 8);
-        mod5 = 0;
-    }
-    else
-    {
-        // CAN1_Tx_Index += CAN1_Manage_Object.Message_Nums;
-        // if (CAN1_Tx_Index >= 4)
-        // {
-        //     CAN1_Tx_Index = 0;
-        // }
-        while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1))
-        {
-            CAN1_Tx_Index = (CAN1_Tx_Index + 1) % 4;
-            CAN_Send_Data(Massage_queue[CAN1_Tx_Index].hcan, Massage_queue[CAN1_Tx_Index].ID, Massage_queue[CAN1_Tx_Index].Data, Massage_queue[CAN1_Tx_Index].Length);
-        }
-        // CAN_Send_Data(&hcan1, 0x01a, CAN1_0x01A_Tx_Data, 8);
-        // CAN_Send_Data(&hcan1, 0x01b, CAN1_0x01B_Tx_Data, 8);
-        // CAN_Send_Data(&hcan1, 0x01c, CAN1_0x01C_Tx_Data, 8);
-        // CAN_Send_Data(&hcan1, 0x01d, CAN1_0x01D_Tx_Data, 8);
-    }
-#endif
-
-    // 上板
-    // CAN_Send_Data(&hcan2, 0x88, CAN2_Chassis_Tx_Gimbal_Data, 8);
-
-#elif defined(GIMBAL)
-
-    // CAN1 摩擦轮*2 pitch
-    CAN_Send_Data(&hcan1, 0x1ff, CAN1_0x1ff_Tx_Data, 8); // pitch-GM6020  按照0x1ff ID 发送 可控制多个电机
-    CAN_Send_Data(&hcan1, 0x200, CAN1_0x200_Tx_Data, 8); // 摩擦轮+拨弹轮 按照0x200 ID 发送 可控制多个电机
-
-    CAN_Send_Data(&hcan1, 0x141, CAN1_0x141_Tx_Data, 8); // pitch-LK6010  按照0x141 ID 发送 一次只能控制一个电机
-
-    // CAN2 yaw 下板
-    CAN_Send_Data(&hcan2, 0x1ff, CAN2_0x1ff_Tx_Data, 8);         // yaw-GM6020  按照0x1ff ID 发送 可控制多个电机
-    CAN_Send_Data(&hcan2, 0x77, CAN2_Gimbal_Tx_Chassis_Data, 8); // 给底盘发送控制命令 按照0x77 ID 发送
-#endif
-}
 
 /**
  * @brief HAL库CAN接收FIFO0中断

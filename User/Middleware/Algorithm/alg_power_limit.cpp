@@ -1,6 +1,6 @@
 /**
  * @file alg_power_limit.h
- * @author jh,qyx
+ * @author qyx
  * @brief 自适应功率限制算法
  * @version 1.2
  * @date
@@ -15,7 +15,7 @@
 /* Private macros ------------------------------------------------------------*/
 /* Private types -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-Class_Power_Limit Power_Limit;
+
 
 /* Private function declarations ---------------------------------------------*/
 static inline bool floatEqual(float a, float b) { return fabs(a - b) < 1e-5f; }
@@ -41,7 +41,7 @@ void Class_Power_Limit::Init()
  *
  * @param omega 转子转速，单位为rpm
  * @param torque 转子扭矩大小，单位为nm
- * @param motor_index 电机索引，偶数为转向电机，奇数为动力电机，舵轮需要传
+ * @param motor_index 电机索引，偶数为转向电机，奇数为动力电机，舵轮需要传此参数
  * @return float 理论功率值
  */
 float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque, uint8_t motor_index)
@@ -187,7 +187,7 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
     {
         if (floatEqual(delta, 0.0f))
         {
-            newTorqueCurrent = omega / (2.0f * k2_use);
+            newTorqueCurrent = -omega / (2.0f * k2_use);
         }
         else if (delta > 0.0f)
         {
@@ -202,7 +202,7 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
         }
         else
         {
-           newTorqueCurrent = omega / (2.0f * k2_use);
+            newTorqueCurrent = -omega / (2.0f * k2_use);
         }
     }
     return newTorqueCurrent;
@@ -273,7 +273,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
         scale_mot = 1.0f;
     }
 
-    // 应用缩放系数并更新输出
+    // 应用收缩系数并更新输出
     for (uint8_t i = 0; i < 8; i++)
     {
         float scale = (i % 2 == 0) ? scale_dir : scale_mot;
@@ -300,7 +300,6 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
         power_management.Motor_Data[i].output =
             (power_management.Motor_Data[i].output > 16384) ? 16384 : (power_management.Motor_Data[i].output < -16384) ? -16384
                                                                                                                        : power_management.Motor_Data[i].output;
-
     }
 
     power_management.Theoretical_Total_Power = theoretical_sum_mot + theoretical_sum_dir;
@@ -326,7 +325,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
 
     power_management.Theoretical_Total_Power = theoretical_sum;
 
-    // 计算缩放系数
+    // 计算收缩系数
     if (power_management.Max_Power < power_management.Theoretical_Total_Power)
     {
         power_management.Scale_Conffient =
@@ -337,7 +336,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
         power_management.Scale_Conffient = 1.0f;
     }
 
-    // 应用缩放系数并更新输出
+    // 应用收缩系数并更新输出
     for (uint8_t i = 0; i < 8; i++)
     {
         power_management.Motor_Data[i].scaled_power =
