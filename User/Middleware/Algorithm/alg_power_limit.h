@@ -132,11 +132,11 @@ protected:
     // 参数
     float k1_mot = 0.024246;     // 动力电机k1
     float k2_mot = 1.183594;     // 动力电机k2
-    float k3_mot = 9.28f / 8.0f; // 动力电机k3
+    float k3_mot = 4.26f / 8.0f; // 动力电机k3
 
     float k1_dir = 0.024246;     // 转向电机k1
     float k2_dir = 1.183594;     // 转向电机k2
-    float k3_dir = 9.28f / 8.0f; // 转向电机k3
+    float k3_dir = 4.26f / 8.0f; // 转向电机k3
 
     RLS<2> rls_mot{1e-5f, 0.9999f}; // 动力电机RLS
     RLS<2> rls_dir{1e-5f, 0.9999f}; // 转向电机RLS
@@ -144,7 +144,7 @@ protected:
     // 普通四电机底盘参数
     float k1 = 0.024246;
     float k2 = 1.183594;
-    float k3 = 9.28f / 8.0f;
+    float k3 = 4.26f / 8.0f;
     RLS<2> rls{1e-5f, 0.9999f};
 #endif
 };

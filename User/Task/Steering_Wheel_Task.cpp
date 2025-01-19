@@ -93,6 +93,8 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 由于can中断会修改Power_Management的内容，所以这里进出临界区以保护数据
     portENTER_CRITICAL();
 
+
+    //以下部分考虑后续整合为一个函数
     // 1. 角度优化
     if (steering_wheel->deg_optimization == ENABLE_MINOR_DEG_OPTIMIZEATION)
     {
@@ -176,16 +178,17 @@ void Control_Update(Class_Steering_Wheel *steering_wheel)
     // 运行功率限制任务
     steering_wheel->Power_Limit.Power_Task(steering_wheel->Power_Management);
 
-    // 设置输出
-    steering_wheel->Directive_Motor.Set_Out(
-        steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].output);
-    steering_wheel->Motion_Motor.Set_Out(
-        steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].output);
+    // // 设置输出
+     steering_wheel->Directive_Motor.Set_Out(
+         steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX].output);
+     steering_wheel->Motion_Motor.Set_Out(
+         steering_wheel->Power_Management.Motor_Data[MOTOR_BASE_INDEX + 1].output);
 #endif
 
-    portEXIT_CRITICAL();
+
 
 #endif 
+    portEXIT_CRITICAL();
 }
 __fp16 k1, k2;
 uint8_t test_data[8];

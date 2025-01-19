@@ -17,18 +17,18 @@
 /* Exported macros -----------------------------------------------------------*/
 #define ARM_MATH_CM3
 #define STEERING_WHEEL
-#define POWER_CONTROL 1 // 启用功率控制
-
+#define POWER_CONTROL 1         //启用功率控制
+#define ENERGY_LOOP 1           //启用能量环
 /* 兵种/底盘类型/舵小板选择 ------------------------------------------------------------*/
 #define AGV         //舵轮底盘
 #define INFANTRY    //步兵
 //#define HERO
 
 // 不同舵轮对应宏定义
-//  #define AGV_BOARD_A
-//  #define AGV_BOARD_B
-//  #define AGV_BOARD_C
-#define AGV_BOARD_D
+  //#define AGV_BOARD_A
+ #define AGV_BOARD_B
+ // #define AGV_BOARD_C
+//#define AGV_BOARD_D
 /*--------------------------------------------------------------------------*/
 
 /*轮组数据*/

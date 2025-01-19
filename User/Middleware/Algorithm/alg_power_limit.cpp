@@ -233,12 +233,20 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
             {
                 theoretical_sum_dir += power_management.Motor_Data[i].theoretical_power;
             }
+            else
+            {
+                power_management.Motor_Data[i].theoretical_power = 0;
+            }
         }
         else // 动力电机
         {
             if (power_management.Motor_Data[i].theoretical_power > 0)
             {
                 theoretical_sum_mot += power_management.Motor_Data[i].theoretical_power;
+            }
+            else
+            {
+                power_management.Motor_Data[i].theoretical_power = 0;
             }
         }
     }
