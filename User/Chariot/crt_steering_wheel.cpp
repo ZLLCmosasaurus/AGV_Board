@@ -90,15 +90,14 @@ void Class_Steering_Wheel::CAN_RxChassisCallback(Struct_CAN_Rx_Buffer *CAN_RxMes
 
 void Class_Steering_Wheel::Init()
 {
-    memset(&Power_Management, 0, sizeof(Power_Management));
-
+   
     // todo:待调参
 
-    Motion_Motor.PID_Omega.Init(7.5, 0, 0, 0, 0, 16384);
+    Motion_Motor.PID_Omega.Init(6.5, 0, 0, 0, 0, 16384);
     Motion_Motor.Init(&hcan1, DJI_Motor_ID_0x202, DJI_Motor_Control_Method_OMEGA, MOT_OUTPUT_TO_ROTOR_RATIO);
 
-    Directive_Motor.PID_Angle.Init(4.5, 0, 0, 0, 0, 16384);
-    Directive_Motor.PID_Omega.Init(25, 0, 0, 0, 0, 16384);
+    Directive_Motor.PID_Angle.Init(6.0, 0.1, 0, 0, 0, 16384);
+    Directive_Motor.PID_Omega.Init(40, 2, 0, 0, 0, 16384);
 
 #ifdef DEBUG_DIR_SPEED
     Directive_Motor.Init(&hcan1, DJI_Motor_ID_0x201, DJI_Motor_Control_Method_OMEGA, 8);
