@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef ALG_POWER_LIMIT_H
-#define ALG_POWER_LIMIT_H
+#ifndef ALG_NEW_POWER_LIMIT_H
+#define ALG_NEW_POWER_LIMIT_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -37,7 +37,7 @@
 /*----------------------------------------------------------------------------*/
 
 #ifdef AGV
-
+#define MOTORS_NUM 8
 #ifdef INFANTRY || HERO
 // 转向电机参数选择
 #define DIR_CMD_CURRENT_TO_TORQUE M3508_CMD_CURRENT_TO_TORQUE
@@ -63,8 +63,14 @@
 // 根据电机索引选择对应的转换系数
 #define GET_CMD_CURRENT_TO_TORQUE(motor_index) ((motor_index % 2 == 0) ? DIR_CMD_CURRENT_TO_TORQUE : MOT_CMD_CURRENT_TO_TORQUE)
 #define GET_TORQUE_TO_CMD_CURRENT(motor_index) ((motor_index % 2 == 0) ? DIR_TORQUE_TO_CMD_CURRENT : MOT_TORQUE_TO_CMD_CURRENT)
-
+#else
+#define MOTORS_NUM 4
+// 根据电机索引选择对应的转换系数
+#define GET_CMD_CURRENT_TO_TORQUE M3508_CMD_CURRENT_TO_TORQUE
+#define GET_TORQUE_TO_CMD_CURRENT M3508_TORQUE_TO_CMD_CURRENT
 #endif
+
+
 /*---------------------------------------------------------------------------------*/
 
 typedef struct
@@ -75,20 +81,20 @@ typedef struct
     __fp16 torque;           // pid输出的转子转矩,Nm
     float theoretical_power; // 理论功率
     float scaled_power;      // 功率（收缩后）
-
-    int16_t pid_output; // pid输出的扭矩电流控制值（16384）
-    int16_t output;     // 最终输出扭矩电流控制值（16384）
+    float omega_error;       // 转子转速误差(绝对值)
+    int16_t pid_output;      // pid输出的扭矩电流控制值（16384）
+    int16_t output;          // 最终输出扭矩电流控制值（16384）
 } Struct_Power_Motor_Data;
 
 typedef struct
 {
-    uint16_t Max_Power;            // 最大功率限制
-    float Scale_Conffient;         // 功率收缩系数
-    float Theoretical_Total_Power; // 理论总功率
-    float Scaled_Total_Power;      // 收缩后总功率
-    float Actual_Power;            // 实际总功率
-
-    Struct_Power_Motor_Data Motor_Data[8]; // 舵轮底盘八个电机，分为四组，默认偶数索引值的电机为转向电机，奇数索引值的电机为动力电机
+    uint16_t Max_Power;                             // 最大功率限制
+    float Scale_Conffient;                          // 功率收缩系数
+    float Theoretical_Total_Power;                  // 理论总功率
+    float Scaled_Total_Power;                       // 收缩后总功率
+    float Actual_Power;                             // 实际总功率
+    float Total_error;                              // 转子转速总误差（绝对值）
+    Struct_Power_Motor_Data Motor_Data[MOTORS_NUM]; // 舵轮底盘八个电机，分为四组，默认偶数索引值的电机为转向电机，奇数索引值的电机为动力电机
 
 } Struct_Power_Management;
 

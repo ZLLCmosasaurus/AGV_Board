@@ -22,7 +22,12 @@ static inline float rpm2av(float rpm) { return rpm * (float)PI / 30.0f; }
 static inline float av2rpm(float av) { return av * 30.0f / (float)PI; }
 static inline float my_fmax(float a, float b) { return (a > b) ? a : b; }
 
-void Class_Power_Limit::Init()
+/**
+ * @brief
+ * @param __ErrorLow 低于Error会进行等比分配
+ * @param __ErrorUp 高于error，直接按error分配功率，防止功率乱吃，分配错误
+ */
+void Class_Power_Limit::Init(float __E_lower, float __E_upper)
 {
 
     float initParams[2] = {k1, k2};
@@ -65,7 +70,7 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
 
     if (actual_power > 5)
     {
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 4; i++)
         {
             if (motor_data[i].feedback_torque * rpm2av(motor_data[i].feedback_omega) > 0)
             {
@@ -92,6 +97,8 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
  * @param motor_index 电机索引，偶数为转向电机，奇数为动力电机
  * @return float 限制后的扭矩值
  */
+
+uint8_t test_flag = 0;
 float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque, uint8_t motor_index)
 {
 
@@ -104,6 +111,7 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
     // if (torque * omega <= 0)
     {
         newTorqueCurrent = torque;
+        test_flag = 0;
     }
     else
     {
@@ -118,6 +126,8 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
             float solution2 = (-omega - sqrtf(delta)) / (2.0f * k2);
 
             newTorqueCurrent = (torque > 0) ? solution1 : solution2;
+
+            test_flag = 2;
         }
         else
         {
@@ -125,6 +135,38 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
         }
     }
     return newTorqueCurrent;
+}
+
+/**
+ * @brief 大P计算，计算每个电机分配的功率
+ * @param Motor_Data 电机结构体
+ * @param __Total_error 目标值与实际值绝对值误差加和
+ * @param Max_Power 限制的最大功率
+ * @param __Scale_Conffient 功率收缩因子
+ */
+void Class_Power_Limit::Calulate_Power_Allocate(Struct_Power_Motor_Data &Motor_Data, float __Total_error, float Max_Power, float __Scale_Conffient)
+{
+
+    if (__Total_error <= ErrorLow)
+    {
+        Motor_Data.scaled_power = Motor_Data.theoretical_power *
+                                  __Scale_Conffient;
+    }
+    else if (__Total_error >= ErrorUp)
+    {
+        Motor_Data.scaled_power = Max_Power *
+                                  (Motor_Data.omega_error / __Total_error);
+    }
+    else
+    { // 处于中间线性变化分配策略
+        float Kp = 0.0f;
+        Kp = (__Total_error - ErrorLow) / (ErrorUp - ErrorLow);
+
+        Motor_Data.scaled_power =
+            (1 - Kp) * Motor_Data.theoretical_power *
+                __Scale_Conffient +
+            Kp * Max_Power * (Motor_Data.omega_error / __Total_error);
+    }
 }
 
 /**
@@ -152,20 +194,12 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
             {
                 theoretical_sum_dir += power_management.Motor_Data[i].theoretical_power;
             }
-            else
-            {
-                power_management.Motor_Data[i].theoretical_power = 0;
-            }
         }
         else // 动力电机
         {
             if (power_management.Motor_Data[i].theoretical_power > 0)
             {
                 theoretical_sum_mot += power_management.Motor_Data[i].theoretical_power;
-            }
-            else
-            {
-                power_management.Motor_Data[i].theoretical_power = 0;
             }
         }
     }
@@ -238,7 +272,7 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
     float scaled_sum = 0;
 
     // 计算理论功率
-    for (uint8_t i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 4; i++)
     {
         power_management.Motor_Data[i].theoretical_power =
             Calculate_Theoretical_Power(power_management.Motor_Data[i].feedback_omega,
@@ -248,8 +282,11 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
         {
             theoretical_sum += power_management.Motor_Data[i].theoretical_power;
         }
+        else
+        {
+            power_management.Motor_Data[i].theoretical_power = 0;
+        }
     }
-
     power_management.Theoretical_Total_Power = theoretical_sum;
 
     // 计算收缩系数
@@ -264,12 +301,23 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
     }
 
     // 应用收缩系数并更新输出
-    for (uint8_t i = 0; i < 8; i++)
+    for (uint8_t i = 0; i < 4; i++)
     {
+#ifdef BIG_P_ALLOCATE
+        if (power_management.Max_Power < power_management.Theoretical_Total_Power)
+        {
+            Calulate_Power_Allocate(power_management.Motor_Data[i], power_management.Total_error,
+                                    power_management.Max_Power, power_management.Scale_Conffient);
+        }
+        else
+        {
+            power_management.Motor_Data[i].scaled_power = power_management.Motor_Data[i].theoretical_power;
+        }
+#else
         power_management.Motor_Data[i].scaled_power =
             power_management.Motor_Data[i].theoretical_power *
             power_management.Scale_Conffient;
-
+#endif
         scaled_sum += power_management.Motor_Data[i].scaled_power;
 
         power_management.Motor_Data[i].output =
@@ -277,11 +325,15 @@ void Class_Power_Limit::Power_Task(Struct_Power_Management &power_management)
                             power_management.Motor_Data[i].scaled_power,
                             power_management.Motor_Data[i].torque,
                             i) *
-            TORQUE_TO_CMD_CURRENT;
+            GET_TORQUE_TO_CMD_CURRENT;
 
-        if (abs(power_management.Motor_Data[i].output) >= 16384)
+        if ((power_management.Motor_Data[i].output) >= 16384)
         {
-            power_management.Motor_Data[i].output = 0;
+            power_management.Motor_Data[i].output = 16384;
+        }
+        if ((power_management.Motor_Data[i].output) <= -16384)
+        {
+            power_management.Motor_Data[i].output = -16384;
         }
     }
 
