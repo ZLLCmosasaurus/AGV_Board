@@ -16,7 +16,6 @@
 /* Private types -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-
 /* Private function declarations ---------------------------------------------*/
 static inline bool floatEqual(float a, float b) { return fabs(a - b) < 1e-5f; }
 static inline float rpm2av(float rpm) { return rpm * (float)PI / 30.0f; }
@@ -25,15 +24,9 @@ static inline float my_fmax(float a, float b) { return (a > b) ? a : b; }
 
 void Class_Power_Limit::Init()
 {
-#ifdef AGV
-    float initParams_dir[2] = {k1_dir, k2_dir};
-    rls_dir.setParamVector(Matrixf<2, 1>(initParams_dir));
-    float initParams_mot[2] = {k1_mot, k2_mot};
-    rls_mot.setParamVector(Matrixf<2, 1>(initParams_mot));
-#else
+
     float initParams[2] = {k1, k2};
     rls.setParamVector(Matrixf<2, 1>(initParams));
-#endif
 }
 
 /**
@@ -46,23 +39,12 @@ void Class_Power_Limit::Init()
  */
 float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque, uint8_t motor_index)
 {
-#ifdef AGV
-    // 根据电机索引选择对应的参数
-    bool is_direction_motor = (motor_index % 2 == 0);
-    float k1_use = is_direction_motor ? k1_dir : k1_mot;
-    float k2_use = is_direction_motor ? k2_dir : k2_mot;
-    float k3_use = is_direction_motor ? k3_dir : k3_mot;
 
-    float cmdPower = rpm2av(omega) * torque +
-                     fabs(rpm2av(omega)) * k1_use +
-                     torque * torque * k2_use +
-                     k3_use;
-#else
     float cmdPower = rpm2av(omega) * torque +
                      fabs(rpm2av(omega)) * k1 +
                      torque * torque * k2 +
                      k3;
-#endif
+
     return cmdPower;
 }
 
@@ -74,57 +56,7 @@ float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque, 
  */
 void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const Struct_Power_Motor_Data *motor_data)
 {
-#ifdef AGV
-    static Matrixf<2, 1> samples_mot, samples_dir;
-    static Matrixf<2, 1> params_mot, params_dir;
-    float effectivePower_mot = 0, effectivePower_dir = 0;
 
-    samples_mot[0][0] = samples_mot[1][0] = 0;
-    samples_dir[0][0] = samples_dir[1][0] = 0;
-
-    if (actual_power > 5)
-    {
-        // 分别处理动力电机(奇数索引)和转向电机(偶数索引)
-        for (int i = 0; i < 8; i++)
-        {
-            if (i % 2 == 0) // 转向电机
-            {
-                if (motor_data[i].feedback_torque * rpm2av(motor_data[i].feedback_omega) > 0)
-                {
-                    effectivePower_dir += motor_data[i].feedback_torque *
-                                          rpm2av(motor_data[i].feedback_omega);
-                }
-                samples_dir[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega));
-                samples_dir[1][0] += motor_data[i].feedback_torque *
-                                     motor_data[i].feedback_torque;
-            }
-            else // 动力电机
-            {
-                if (motor_data[i].feedback_torque * rpm2av(motor_data[i].feedback_omega) > 0)
-                {
-                    effectivePower_mot += motor_data[i].feedback_torque *
-                                          rpm2av(motor_data[i].feedback_omega);
-                }
-                samples_mot[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega));
-                samples_mot[1][0] += motor_data[i].feedback_torque *
-                                     motor_data[i].feedback_torque;
-            }
-        }
-
-        // 更新RLS参数
-        float power_ratio = 0.8f; // 动力电机功率占比
-        params_mot = rls_mot.update(samples_mot,
-                                    power_ratio * actual_power - effectivePower_mot - 4 * k3_mot);
-        params_dir = rls_dir.update(samples_dir,
-                                    (1 - power_ratio) * actual_power - effectivePower_dir - 4 * k3_dir);
-
-        // 更新系数
-        k1_mot = my_fmax(params_mot[0][0], 1e-5f);
-        k2_mot = my_fmax(params_mot[1][0], 1e-5f);
-        k1_dir = my_fmax(params_dir[0][0], 1e-5f);
-        k2_dir = my_fmax(params_dir[1][0], 1e-5f);
-    }
-#else
     static Matrixf<2, 1> samples;
     static Matrixf<2, 1> params;
     float effectivePower = 0;
@@ -140,16 +72,15 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
                 effectivePower += motor_data[i].feedback_torque *
                                   rpm2av(motor_data[i].feedback_omega);
             }
-            samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega));
+            samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega)) * fabsf(rpm2av(motor_data[i].feedback_omega));
             samples[1][0] += motor_data[i].feedback_torque *
                              motor_data[i].feedback_torque;
         }
 
         params = rls.update(samples, actual_power - effectivePower - 8 * k3);
-        k1 = my_fmax(params[0][0], 1e-5f);
-        k2 = my_fmax(params[1][0], 1e-5f);
+        k1 = my_fmax(params[0][0], 1e-7f);
+        k2 = my_fmax(params[1][0], 1e-7f);
     }
-#endif
 }
 
 /**
@@ -163,23 +94,14 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
  */
 float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque, uint8_t motor_index)
 {
-#ifdef AGV
-    bool is_direction_motor = (motor_index % 2 == 0);
-    float k1_use = is_direction_motor ? k1_dir : k1_mot;
-    float k2_use = is_direction_motor ? k2_dir : k2_mot;
-    float k3_use = is_direction_motor ? k3_dir : k3_mot;
-#endif
 
     omega = rpm2av(omega);
     float newTorqueCurrent = 0.0f;
 
-#ifdef AGV
-    float delta = omega * omega - 4 * (k1_use * fabs(omega) + k3_use - power) * k2_use;
-#else
-    float delta = omega * omega - 4 * (k1 * fabs(omega) + k3 - power) * k2;
-#endif
+    float delta = omega * omega - 4 * (k1 * fabs(omega) * fabs(omega) + k3 - power) * k2;
 
-    if (torque * omega <= 0)
+    if (power <= 0)
+    // if (torque * omega <= 0)
     {
         newTorqueCurrent = torque;
     }
@@ -187,22 +109,19 @@ float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque,
     {
         if (floatEqual(delta, 0.0f))
         {
-            newTorqueCurrent = -omega / (2.0f * k2_use);
+            newTorqueCurrent = -omega / (2.0f * k2);
         }
         else if (delta > 0.0f)
         {
-#ifdef AGV
-            float solution1 = (-omega + sqrtf(delta)) / (2.0f * k2_use);
-            float solution2 = (-omega - sqrtf(delta)) / (2.0f * k2_use);
-#else
+
             float solution1 = (-omega + sqrtf(delta)) / (2.0f * k2);
             float solution2 = (-omega - sqrtf(delta)) / (2.0f * k2);
-#endif
+
             newTorqueCurrent = (torque > 0) ? solution1 : solution2;
         }
         else
         {
-            newTorqueCurrent = -omega / (2.0f * k2_use);
+            newTorqueCurrent = -omega / (2.0f * k2);
         }
     }
     return newTorqueCurrent;

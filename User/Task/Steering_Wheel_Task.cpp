@@ -195,11 +195,11 @@ uint8_t test_data[8];
 void Command_Send(Class_Steering_Wheel *steering_wheel)
 {
     /*测试用*/
-    k1 = (__fp16)steering_wheel->Power_Limit.Get_K2_Dir();
-    k2 = (__fp16)steering_wheel->Power_Limit.Get_K2_Mot();
-    memcpy(test_data, &steering_wheel->Power_Management.Theoretical_Total_Power, sizeof(float));
-    memcpy(test_data + 4, &k1, sizeof(__fp16));
-    memcpy(test_data + 6, &k2, sizeof(__fp16));
+//    k1 = (__fp16)steering_wheel->Power_Limit.Get_K2_Dir();
+//    k2 = (__fp16)steering_wheel->Power_Limit.Get_K2_Mot();
+//    memcpy(test_data, &steering_wheel->Power_Management.Theoretical_Total_Power, sizeof(float));
+//    memcpy(test_data + 4, &k1, sizeof(__fp16));
+//    memcpy(test_data + 6, &k2, sizeof(__fp16));
 #ifdef AGV_BOARD_D
     CAN_Send_Data(&hcan2, 0x20E, test_data, 8);
 #endif

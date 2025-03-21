@@ -101,22 +101,7 @@ public:
     void Power_Task(Struct_Power_Management &power_management);
     void Init();
 
-#ifdef AGV
-    // AGV模式下的getter/setter
-    inline float Get_K1_Mot() const { return k1_mot; }
-    inline float Get_K2_Mot() const { return k2_mot; }
-    inline float Get_K1_Dir() const { return k1_dir; }
-    inline float Get_K2_Dir() const { return k2_dir; }
-    inline float Get_K3_Mot() const { return k3_mot; }
-    inline float Get_K3_Dir() const { return k3_dir; }
 
-    inline void Set_K1_Mot(float _k1) { k1_mot = _k1; }
-    inline void Set_K2_Mot(float _k2) { k2_mot = _k2; }
-    inline void Set_K1_Dir(float _k1) { k1_dir = _k1; }
-    inline void Set_K2_Dir(float _k2) { k2_dir = _k2; }
-    inline void Set_K3_Mot(float _k3) { k3_mot = _k3; }
-    inline void Set_K3_Dir(float _k3) { k3_dir = _k3; }
-#else
     // 普通模式下的getter/setter
     inline float Get_K1() const { return k1; }
     inline float Get_K2() const { return k2; }
@@ -125,28 +110,14 @@ public:
     inline void Set_K1(float _k1) { k1 = _k1; }
     inline void Set_K2(float _k2) { k2 = _k2; }
     inline void Set_K3(float _k3) { k3 = _k3; }
-#endif
+
 
 protected:
-#ifdef AGV
-    // 参数
-    float k1_mot = 0.024246;     // 动力电机k1
-    float k2_mot = 1.183594;     // 动力电机k2
-    float k3_mot = 4.26f / 8.0f; // 动力电机k3
+    float k1 = 0.000208264653;
+    float k2 = 477.0f;
+    float k3 = 5.0f / 8.0f;
+    RLS<2> rls{1e-5f, 0.99f};
 
-    float k1_dir = 0.024246;     // 转向电机k1
-    float k2_dir = 1.183594;     // 转向电机k2
-    float k3_dir = 4.26f / 8.0f; // 转向电机k3
-
-    RLS<2> rls_mot{1e-5f, 0.9999f}; // 动力电机RLS
-    RLS<2> rls_dir{1e-5f, 0.9999f}; // 转向电机RLS
-#else
-    // 普通四电机底盘参数
-    float k1 = 0.024246;
-    float k2 = 1.183594;
-    float k3 = 4.26f / 8.0f;
-    RLS<2> rls{1e-5f, 0.9999f};
-#endif
 };
 
 #endif
