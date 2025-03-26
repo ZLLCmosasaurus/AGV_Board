@@ -40,8 +40,8 @@ void Class_Power_Limit::Init()
 float Class_Power_Limit::Calculate_Theoretical_Power(float omega, float torque, uint8_t motor_index)
 {
 
-    float cmdPower = rpm2av(omega) * torque +
-                     fabs(rpm2av(omega)) * fabs(rpm2av(omega))* k1 +
+    float cmdPower = fabs(rpm2av(omega) * torque) +
+                     fabs(rpm2av(omega)) * fabs(rpm2av(omega)) * k1 +
                      torque * torque * k2 +
                      k3;
 
@@ -67,11 +67,10 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
     {
         for (int i = 0; i < 8; i++)
         {
-            if (motor_data[i].feedback_torque * rpm2av(motor_data[i].feedback_omega) > 0)
-            {
-                effectivePower += motor_data[i].feedback_torque *
-                                  rpm2av(motor_data[i].feedback_omega);
-            }
+
+            effectivePower += fabs(motor_data[i].feedback_torque *
+                                   rpm2av(motor_data[i].feedback_omega));
+
             samples[0][0] += fabsf(rpm2av(motor_data[i].feedback_omega)) * fabsf(rpm2av(motor_data[i].feedback_omega));
             samples[1][0] += motor_data[i].feedback_torque *
                              motor_data[i].feedback_torque;
@@ -95,36 +94,27 @@ void Class_Power_Limit::Calculate_Power_Coefficient(float actual_power, const St
 float Class_Power_Limit::Calculate_Toque(float omega, float power, float torque, uint8_t motor_index)
 {
 
+    float k = 0; // 伸缩系数k
     omega = rpm2av(omega);
-    float newTorqueCurrent = 0.0f;
+    float newTorque = 0.0f;
 
-    float delta = omega * omega - 4 * (k1 * fabs(omega) * fabs(omega) + k3 - power) * k2;
+    float part_a = k2 * torque * torque;
+    float part_b = fabs(omega * torque);
+    float part_c = k1 * fabs(omega * omega) + k3 - power;
 
-    if (power <= 0)
-    // if (torque * omega <= 0)
+    float delta = part_b * part_b - 4 * part_a * part_c;
+
+    if (delta >= 0)
     {
-        newTorqueCurrent = torque;
+        k = (-part_b + sqrt(delta)) / (2 * part_a);
     }
     else
     {
-        if (floatEqual(delta, 0.0f))
-        {
-            newTorqueCurrent = -omega / (2.0f * k2);
-        }
-        else if (delta > 0.0f)
-        {
-
-            float solution1 = (-omega + sqrtf(delta)) / (2.0f * k2);
-            float solution2 = (-omega - sqrtf(delta)) / (2.0f * k2);
-
-            newTorqueCurrent = (torque > 0) ? solution1 : solution2;
-        }
-        else
-        {
-            newTorqueCurrent = -omega / (2.0f * k2);
-        }
+        k = 1;
     }
-    return newTorqueCurrent;
+    k = (k > 1) ? 1 : k;
+    newTorque = k * torque;
+    return newTorque;
 }
 
 /**
